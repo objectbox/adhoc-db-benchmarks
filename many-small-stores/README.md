@@ -1,6 +1,6 @@
 # Messung: 100.000 kleine Stores je Engine, ObjectBox bis 500.000
 
-Stand 06.10.2026 · intern, bis Markus die Ergebnistabelle gesehen hat · gemessen von Claude in einer Cloud-Sandbox. Baut auf der Erstmessung vom 05.10. auf (`2026_10_05_Erstmessung_Eine_DB_pro_Agent.md`, 10.000 Stores) und bestätigt sie.
+Stand 06.10.2026 · intern, bis die Ergebnisse geprüft sind · gemessen in einer Cloud-Sandbox. Baut auf der Erstmessung vom 05.10. auf (`2026_10_05_Erstmessung_Eine_DB_pro_Agent.md`, 10.000 Stores) und bestätigt sie.
 
 ## Ergebnis in drei Sätzen
 
