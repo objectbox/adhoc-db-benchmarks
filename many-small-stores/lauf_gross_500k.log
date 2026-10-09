@@ -1,17 +1,17 @@
-17:28:45 obx standard anlegen 500000
-17:49:19 obx standard oeffnen warm 1
-17:49:29 obx standard oeffnen warm 2
-17:49:39 obx standard oeffnen warm 3
-17:49:53 obx standard oeffnen kalt 1
-17:50:03 obx standard oeffnen kalt 2
-17:50:14 obx standard oeffnen kalt 3
-17:50:24 obx standard halten 1000
-17:53:46 obx mallopt anlegen 500000
-18:10:54 obx mallopt oeffnen warm 1
-18:10:58 obx mallopt oeffnen warm 2
-18:11:03 obx mallopt oeffnen warm 3
-18:11:14 obx mallopt oeffnen kalt 1
-18:11:21 obx mallopt oeffnen kalt 2
-18:11:27 obx mallopt oeffnen kalt 3
-18:11:33 obx mallopt halten 1000
-18:11:33 fertig
+17:28:45 obx standard create 500000
+17:49:19 obx standard open warm 1
+17:49:29 obx standard open warm 2
+17:49:39 obx standard open warm 3
+17:49:53 obx standard open cold 1
+17:50:03 obx standard open cold 2
+17:50:14 obx standard open cold 3
+17:50:24 obx standard hold 1000
+17:53:46 obx mallopt create 500000
+18:10:54 obx mallopt open warm 1
+18:10:58 obx mallopt open warm 2
+18:11:03 obx mallopt open warm 3
+18:11:14 obx mallopt open cold 1
+18:11:21 obx mallopt open cold 2
+18:11:27 obx mallopt open cold 3
+18:11:33 obx mallopt hold 1000
+18:11:33 done

@@ -1,83 +1,83 @@
-# Messung: 100.000 kleine Stores je Engine, ObjectBox bis 500.000
+# Measurement: 100,000 small stores per engine, ObjectBox up to 500,000
 
-Stand 06.10.2026 · intern, bis die Ergebnisse geprüft sind · gemessen in einer Cloud-Sandbox. Baut auf der Erstmessung vom 05.10. auf (`2026_10_05_Erstmessung_Eine_DB_pro_Agent.md`, 10.000 Stores) und bestätigt sie.
+As of 2026-10-06 · internal until the results have been reviewed · measured in a cloud sandbox. Builds on the first measurement from 2026-10-05 (`2026_10_05_Erstmessung_Eine_DB_pro_Agent.md`, 10,000 stores) and confirms it.
 
-## Ergebnis in drei Sätzen
+## Result in three sentences
 
-Eine ObjectBox-Datenbank anlegen und zehn Objekte schreiben dauert gut 2 ms, ein Store kostet im Leerlauf 24 KB Platte, öffnen, abfragen und schließen bleibt im Median unter einer Millisekunde – auch bei 500.000 Stores. Gegen Turso Database liegt ObjectBox beim Öffnen und beim Arbeitsspeicher vorn. Gegen SQLite liegt ObjectBox beim Arbeitsspeicher vorn (mit einer Allokator-Zeile), beim Platz und beim Öffnen hinten.
+Creating an ObjectBox database and writing ten objects takes a little over 2 ms, an idle store costs 24 KB of disk, and open, query, close stays below one millisecond at the median – even with 500,000 stores. Against Turso Database, ObjectBox is ahead on opening and on memory. Against SQLite, ObjectBox is ahead on memory (with one allocator line), behind on space and on opening.
 
-## 100.000 Stores je Engine, Standardwerte
+## 100,000 stores per engine, defaults
 
 | | ObjectBox 5.3.2 | SQLite 3.53.4 | Turso Database 0.8.1 | libSQL 0.1.11 |
 |---|---|---|---|---|
-| Anlegen, zehn Objekte schreiben, schließen (Median) | 2,24 ms | 2,29 ms | 3,66 ms | 2,38 ms |
-| dasselbe, p99 | 4,72 ms | 5,44 ms | 6,86 ms | 5,41 ms |
-| Stores je Sekunde | 422 | 403 | 262 | 392 |
-| Platz je Store, Dateien | 24 KB | 8 KB | 8 KB | 8 KB |
-| Platz für alle 100.000, mit Verzeichnissen | 2,67 GB | 1,15 GB | 1,15 GB | 1,15 GB |
-| Öffnen, abfragen, schließen (Median) | 0,34 ms | 0,05 ms | 1,19 ms | 0,08 ms |
-| dasselbe, p99 | 0,63 ms | 0,13 ms | 2,59 ms | 0,21 ms |
-| dasselbe ohne Seitencache (Median) | 0,77 ms | 0,18 ms | 1,38 ms | 0,22 ms |
-| dasselbe ohne Seitencache, p99 | 1,65 ms | 0,69 ms | 2,72 ms | 0,75 ms |
-| Arbeitsspeicher je offenem Store (1.000 offen) | 2.082 KB | 152 KB | 2.135 KB | 163 KB |
-| Dateideskriptoren je offenem Store | 3 | 1 | 2 | 1 |
+| Create, write ten objects, close (median) | 2.24 ms | 2.29 ms | 3.66 ms | 2.38 ms |
+| same, p99 | 4.72 ms | 5.44 ms | 6.86 ms | 5.41 ms |
+| Stores per second | 422 | 403 | 262 | 392 |
+| Space per store, files | 24 KB | 8 KB | 8 KB | 8 KB |
+| Space for all 100,000, with directories | 2.67 GB | 1.15 GB | 1.15 GB | 1.15 GB |
+| Open, query, close (median) | 0.34 ms | 0.05 ms | 1.19 ms | 0.08 ms |
+| same, p99 | 0.63 ms | 0.13 ms | 2.59 ms | 0.21 ms |
+| same without page cache (median) | 0.77 ms | 0.18 ms | 1.38 ms | 0.22 ms |
+| same without page cache, p99 | 1.65 ms | 0.69 ms | 2.72 ms | 0.75 ms |
+| Memory per open store (1,000 open) | 2,082 KB | 152 KB | 2,135 KB | 163 KB |
+| File descriptors per open store | 3 | 1 | 2 | 1 |
 
-## Dieselben 100.000 Stores, mit einer Allokator-Zeile im Messprogramm
+## The same 100,000 stores, with one allocator line in the benchmark program
 
-`mallopt(M_MMAP_THRESHOLD, 131072)`, gesetzt für alle Engines gleich.
+`mallopt(M_MMAP_THRESHOLD, 131072)`, set identically for all engines.
 
 | | ObjectBox | SQLite | Turso Database | libSQL |
 |---|---|---|---|---|
-| Anlegen, schreiben, schließen (Median) | 2,08 ms | 2,43 ms | 3,73 ms | 2,73 ms |
-| Stores je Sekunde | 452 | 381 | 255 | 344 |
-| Öffnen, abfragen, schließen (Median) | 0,10 ms | 0,06 ms | 1,24 ms | 0,09 ms |
-| dasselbe, p99 | 0,36 ms | 0,17 ms | 2,83 ms | 0,23 ms |
-| dasselbe ohne Seitencache (Median) | 0,35 ms | 0,19 ms | 1,46 ms | 0,24 ms |
-| Arbeitsspeicher je offenem Store | 39 KB | 152 KB | 2.135 KB | 163 KB |
+| Create, write, close (median) | 2.08 ms | 2.43 ms | 3.73 ms | 2.73 ms |
+| Stores per second | 452 | 381 | 255 | 344 |
+| Open, query, close (median) | 0.10 ms | 0.06 ms | 1.24 ms | 0.09 ms |
+| same, p99 | 0.36 ms | 0.17 ms | 2.83 ms | 0.23 ms |
+| same without page cache (median) | 0.35 ms | 0.19 ms | 1.46 ms | 0.24 ms |
+| Memory per open store | 39 KB | 152 KB | 2,135 KB | 163 KB |
 
-## ObjectBox allein, 500.000 Stores
+## ObjectBox alone, 500,000 stores
 
-| | Standardwerte | mit Allokator-Zeile |
+| | Defaults | with allocator line |
 |---|---|---|
-| Anlegen, schreiben, schließen (Median) | 2,24 ms | 1,83 ms |
-| Stores je Sekunde | 422 | 510 |
-| Dauer für alle 500.000 | 19 min 46 s | 16 min 21 s |
-| Platz für alle 500.000, mit Verzeichnissen | 13,37 GB | 13,37 GB |
-| Öffnen, abfragen, schließen (Median) | 0,81 ms | 0,38 ms |
-| dasselbe, p99 | 2,56 ms | 1,72 ms |
-| dasselbe nach geleertem Seitencache (Median) | 0,91 ms | 0,49 ms |
-| Arbeitsspeicher je offenem Store | 2.082 KB | 39 KB |
+| Create, write, close (median) | 2.24 ms | 1.83 ms |
+| Stores per second | 422 | 510 |
+| Duration for all 500,000 | 19 min 46 s | 16 min 21 s |
+| Space for all 500,000, with directories | 13.37 GB | 13.37 GB |
+| Open, query, close (median) | 0.81 ms | 0.38 ms |
+| same, p99 | 2.56 ms | 1.72 ms |
+| same after dropping the page cache (median) | 0.91 ms | 0.49 ms |
+| Memory per open store | 2,082 KB | 39 KB |
 
-Das Anlegen wächst linear: 422 Stores je Sekunde bei 100.000 wie bei 500.000. Das Öffnen ist bei 500.000 langsamer als bei 100.000, weil 13,4 GB Daten nicht in die 8 GB Arbeitsspeicher der Maschine passen – ein zufällig gewählter Store liegt dann meist nicht im Seitencache und wird von der Platte gelesen.
+Creation scales linearly: 422 stores per second at 100,000 as at 500,000. Opening is slower at 500,000 than at 100,000 because 13.4 GB of data do not fit into the machine's 8 GB of memory – a randomly chosen store is then usually not in the page cache and is read from disk.
 
-## Was gemessen wurde
+## What was measured
 
-- Je Store ein eigenes Verzeichnis, ein Schema mit einer Tabelle bzw. einem Typ (`id`, `text`, `ts`), zehn kleine Einträge in einer Transaktion.
-- Anlegen: alle Stores nacheinander, ein Prozess, ein Lauf.
-- Öffnen, abfragen, schließen: 10.000 zufällig gewählte Stores, eine Zählabfrage je Store. Drei Läufe mit verschiedenen Stichproben; die Tabelle zeigt den Median der drei Läufe. „Ohne Seitencache" heißt: vor jedem Lauf `sync` und `drop_caches`.
-- Arbeitsspeicher: 1.000 zufällige Stores gleichzeitig offen, Zuwachs des belegten Speichers (RSS) geteilt durch 1.000.
-- Jede Phase läuft in einem eigenen Prozess.
+- One directory per store, a schema with one table or type (`id`, `text`, `ts`), ten small entries in one transaction.
+- Create: all stores one after another, one process, one run.
+- Open, query, close: 10,000 randomly chosen stores, one count query per store. Three runs with different samples; the table shows the median of the three runs. "Without page cache" means: `sync` and `drop_caches` before each run.
+- Memory: 1,000 random stores open at the same time, growth of resident memory (RSS) divided by 1,000.
+- Each phase runs in its own process.
 
-## Vorbehalte
+## Caveats
 
-1. **Kleine Stores.** Zehn kurze Einträge je Store. Das zeigt die Fixkosten einer Datenbank, nicht das Verhalten mit echten Agentendaten (Nachrichten, Vektoren). Das realistische Profil steht noch aus.
-2. **Python als Messrahmen.** ObjectBox wird über die C-API angesprochen (ctypes), SQLite über apsw, Turso Database über pyturso, libSQL über das Paket libsql. Der Aufwand der Anbindungen ist verschieden und steckt in den Zeiten.
-3. **Turso Database ist die lokale Engine in Version 0.8.1**, nicht der Cloud-Dienst Turso. Über den Dienst sagt die Messung nichts.
-4. **Standardwerte für Dauerhaftigkeit.** Jede Engine schreibt so sicher, wie sie es ohne Einstellung tut. Das ist nicht bei allen gleich und beeinflusst das Anlegen.
-5. **Eine virtuelle Maschine.** 2 Kerne, 8 GB Arbeitsspeicher, virtuelle Platte (ext4). Absolute Zeiten gelten für diese Maschine; die Verhältnisse zwischen den Engines sind das Belastbare.
-6. **Ein Prozess, ein Thread.** Keine parallelen Zugriffe.
-7. **Die Allokator-Zeile** ändert nichts an den Engines. Sie legt fest, dass glibc Speicherblöcke ab 128 KB getrennt anfordert, sodass ungenutzte Teile keinen Speicher belegen. ObjectBox profitiert, weil LMDB beim Öffnen zwei Listen von zusammen 3 MiB anlegt, die ein lesender Store nie beschreibt. Bei Turso Database ändert die Zeile nichts.
-8. **Grenze bei ObjectBox:** Mit Standardwerten lassen sich 1.022 Stores gleichzeitig in einem Prozess offen halten (ein Thread-lokaler Schlüssel je Store, Linux erlaubt 1.024). Die Option `no_reader_thread_locals` hebt das auf; sie ist hier nicht verwendet. Gemessen am 05.10.
-9. **Platz bei ObjectBox:** `data.mdb` 20 KB (5 Seiten) und `lock.mdb` 8 KB scheinbar, 4 KB belegt. Die SQL-Engines kommen mit zwei Seiten aus. Auf der Platte sind es bei ObjectBox **zwei Dateien** je Store. Die Zeile „Dateideskriptoren je offenem Store: 3" zählt offene Zugriffe, nicht Dateien: LMDB öffnet `data.mdb` zweimal (einmal normal, einmal mit O_DSYNC für die Meta-Seiten) und `lock.mdb` einmal. Am 06.10. an einem offenen Store nachgeprüft.
+1. **Small stores.** Ten short entries per store. This shows the fixed cost of a database, not the behavior with real agent data (messages, vectors). The realistic profile is still pending.
+2. **Python as the harness.** ObjectBox is accessed through the C API (ctypes), SQLite through apsw, Turso Database through pyturso, libSQL through the libsql package. The overhead of the bindings differs and is included in the times.
+3. **Turso Database is the local engine, version 0.8.1**, not the Turso cloud service. The measurement says nothing about the service.
+4. **Default durability settings.** Each engine writes as safely as it does without configuration. That is not the same for all of them and affects creation.
+5. **One virtual machine.** 2 cores, 8 GB memory, virtual disk (ext4). Absolute times apply to this machine; the ratios between the engines are what holds.
+6. **One process, one thread.** No concurrent access.
+7. **The allocator line** does not change the engines. It makes glibc request memory blocks of 128 KB and more separately, so unused parts take no memory. ObjectBox benefits because LMDB allocates two lists totaling 3 MiB on open, which a reading store never writes to. For Turso Database the line changes nothing.
+8. **Limit for ObjectBox:** With defaults, 1,022 stores can be kept open at the same time in one process (one thread-local key per store, Linux allows 1,024). The option `no_reader_thread_locals` removes this limit; it is not used here. Measured on 2026-10-05.
+9. **Space for ObjectBox:** `data.mdb` 20 KB (5 pages) and `lock.mdb` 8 KB apparent, 4 KB allocated. The SQL engines get by with two pages. On disk, ObjectBox has **two files** per store. The row "File descriptors per open store: 3" counts open handles, not files: LMDB opens `data.mdb` twice (once normally, once with O_DSYNC for the meta pages) and `lock.mdb` once. Verified on an open store on 2026-10-06.
 
-## Nachstellen
+## Reproduce
 
 ```
 ./lauf_gross.sh 100000 10000 1000 "obx sqlite turso libsql" ergebnisse_gross.jsonl
-MESS_ROOT=data_500k ./lauf_gross.sh 500000 10000 1000 "obx" ergebnisse_gross_500k.jsonl
+BENCH_ROOT=data_500k ./lauf_gross.sh 500000 10000 1000 "obx" ergebnisse_gross_500k.jsonl
 python3 auswertung_gross.py ergebnisse_gross.jsonl ergebnisse_gross_500k.jsonl
 ```
 
-Braucht root (für `drop_caches`), `libobjectbox.so` 5.3.2 unter `obxc/lib/`, Python 3.11 mit `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`. Dateien im Ordner: `messung.py` (Engine-Klassen), `messung_gross.py`, `lauf_gross.sh`, `auswertung_gross.py`, Rohdaten `ergebnisse_gross.jsonl` und `ergebnisse_gross_500k.jsonl`, Protokolle `lauf_gross.log` und `lauf_gross_500k.log`, `umgebung_gross.txt`.
+Needs root (for `drop_caches`), `libobjectbox.so` 5.3.2 under `obxc/lib/`, Python 3.11 with `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`. Files in this folder: `messung.py` (engine classes), `messung_gross.py`, `lauf_gross.sh`, `auswertung_gross.py`, raw data `ergebnisse_gross.jsonl` and `ergebnisse_gross_500k.jsonl`, logs `lauf_gross.log` and `lauf_gross_500k.log`, `umgebung_gross.txt`.
 
-Laufzeiten: 100.000 je Engine in beiden Einstellungen 46 Minuten (16:36–17:22 UTC), ObjectBox 500.000 in beiden Einstellungen 43 Minuten (17:28–18:11 UTC). Keine Fehler.
+Run times: 100,000 per engine in both settings 46 minutes (16:36–17:22 UTC), ObjectBox 500,000 in both settings 43 minutes (17:28–18:11 UTC). No errors.

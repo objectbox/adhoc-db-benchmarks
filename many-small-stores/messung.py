@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""Eine Datenbank pro Agent - Messung ObjectBox, SQLite, Turso, libSQL.
+"""One database per agent - measuring ObjectBox, SQLite, Turso, libSQL.
 
-Aufruf (jede Phase in einem frischen Prozess, damit der Speicher sauber ist):
-  python3 messung.py <engine> anlegen  <N>      legt N Datenbanken mit je 10 Objekten an
-  python3 messung.py <engine> oeffnen  <M>      oeffnet M vorhandene nacheinander: oeffnen, lesen, schliessen
-  python3 messung.py <engine> halten   <K>      haelt K gleichzeitig offen und misst den Arbeitsspeicher
+Usage (each phase in a fresh process so memory is clean):
+  python3 messung.py <engine> create <N>      creates N databases with 10 objects each
+  python3 messung.py <engine> open   <M>      opens M existing ones one after another: open, read, close
+  python3 messung.py <engine> hold   <K>      keeps K open at the same time and measures memory
   engine: obx | sqlite | turso | libsql
-Ausgabe: eine JSON-Zeile.
+Output: one JSON line.
 
-ObjectBox wird ueber die offizielle C-API (libobjectbox.so) per ctypes angesprochen,
-weil das Python-Paket auf PyPI (4.0.0, Mai 2024) einen aelteren Kern buendelt.
-Pfad zur Bibliothek: Umgebungsvariable OBX_LIB.
+ObjectBox is accessed through the official C API (libobjectbox.so) via ctypes,
+because the Python package on PyPI (4.0.0, May 2024) bundles an older core.
+Path to the library: environment variable OBX_LIB.
 """
 import ctypes, json, os, statistics, sys, time
 
 ROWS = 10
-ROOT = os.environ.get('MESS_ROOT', 'data')
+ROOT = os.environ.get('BENCH_ROOT', 'data')
 
 # ---------------------------------------------------------------- ObjectBox (C-API)
 class Obx:
@@ -80,7 +80,7 @@ class Obx:
         n = ctypes.c_uint64(0); self.count(self.box(s, 1), 0, ctypes.byref(n)); return n.value
     def close(self, s): self.store_close(s)
 
-# ---------------------------------------------------------------- SQL-Engines
+# ---------------------------------------------------------------- SQL engines
 DDL = 'create table note(id integer primary key, text text, ts integer)'
 INS = 'insert into note(text, ts) values(?, ?)'
 CNT = 'select count(*) from note'
@@ -117,7 +117,7 @@ class Libsql:
 
 ENGINES = {'obx': Obx, 'sqlite': Sqlite, 'turso': Turso, 'libsql': Libsql}
 
-# ---------------------------------------------------------------- Hilfen
+# ---------------------------------------------------------------- Helpers
 def path(e, i): return f'{ROOT}/{e.name}/{i // 1000}/{i}'
 def ms(ns): return ns / 1e6
 def stat(xs):
@@ -138,8 +138,8 @@ def disk(p):
     return app, alloc, files
 T = time.perf_counter_ns
 
-# ---------------------------------------------------------------- Phasen
-def anlegen(e, n):
+# ---------------------------------------------------------------- Phases
+def phase_create(e, n):
     to, tw, tc = [], [], []; t_all = T()
     for i in range(n):
         p = path(e, i); t0 = T(); h = e.create(p); t1 = T(); e.write(h, i); t2 = T(); e.close(h); t3 = T()
@@ -149,39 +149,39 @@ def anlegen(e, n):
     for i in range(n):
         a, b, f = disk(path(e, i)); app += a; alloc += b
         if i == n // 2: sample = f
-    return {'n': n, 'gesamt_je_db': stat([a + b + c for a, b, c in zip(to, tw, tc)]), 'neu_anlegen_mit_schema': stat(to), 'zehn_objekte_schreiben': stat(tw),
-            'schliessen': stat(tc), 'wand_ms_je_db': round(ms(wall) / n, 4), 'platz_kb_scheinbar': round(app / n / 1024, 2), 'platz_kb_belegt': round(alloc / n / 1024, 2),
-            'dateien_beispiel': sample, 'max_rss_mb': round(status('VmHWM') / 1024, 1)}
+    return {'n': n, 'total_per_db': stat([a + b + c for a, b, c in zip(to, tw, tc)]), 'create_with_schema': stat(to), 'write_ten_objects': stat(tw),
+            'close': stat(tc), 'wall_ms_per_db': round(ms(wall) / n, 4), 'space_kb_apparent': round(app / n / 1024, 2), 'space_kb_allocated': round(alloc / n / 1024, 2),
+            'sample_files': sample, 'max_rss_mb': round(status('VmHWM') / 1024, 1)}
 
-def oeffnen(e, m):
+def phase_open(e, m):
     to, tr, tc = [], [], []
     for i in range(m):
         p = path(e, i); t0 = T(); h = e.open(p); t1 = T(); c = e.read(h); t2 = T(); e.close(h); t3 = T()
         assert c == ROWS, c
         to.append(t1 - t0); tr.append(t2 - t1); tc.append(t3 - t2)
-    return {'m': m, 'oeffnen': stat(to), 'erste_abfrage': stat(tr), 'schliessen': stat(tc), 'summe': stat([a + b + c for a, b, c in zip(to, tr, tc)])}
+    return {'m': m, 'open': stat(to), 'first_query': stat(tr), 'close': stat(tc), 'total': stat([a + b + c for a, b, c in zip(to, tr, tc)])}
 
-def halten(e, k):
+def phase_hold(e, k):
     import gc
-    hs = []; m0 = mem(); t0 = T(); fehler = None
+    hs = []; m0 = mem(); t0 = T(); error = None
     try:
         for i in range(k):
             h = e.open(path(e, i)); e.read(h); hs.append(h)
     except Exception as ex:
-        fehler = repr(ex)[:300]
+        error = repr(ex)[:300]
     t1 = T(); m1 = mem(); n = max(len(hs), 1)
     fds = len(os.listdir('/proc/self/fd')); thr = status('Threads'); vsz = status('VmSize')
     t2 = T()
     for h in hs: e.close(h)
-    t3 = T(); offen = len(hs); hs.clear(); gc.collect(); m2 = mem()
-    return {'k_gewuenscht': k, 'k_offen': offen, 'fehler': fehler,
-            'rss_kb_je_db': round((m1['Rss'] - m0['Rss']) / n, 1), 'anonym_kb_je_db': round((m1['Anonymous'] - m0['Anonymous']) / n, 1),
-            'pss_kb_je_db': round((m1['Pss'] - m0['Pss']) / n, 1), 'fds_je_db': round(fds / n, 2), 'threads': thr, 'virtuell_mb_je_db': round(vsz / 1024 / n, 2),
-            'oeffnen_ms_je_db': round(ms(t1 - t0) / n, 4), 'schliessen_ms_je_db': round(ms(t3 - t2) / n, 4),
-            'rss_mb_offen': round((m1['Rss'] - m0['Rss']) / 1024, 1), 'rss_mb_nach_schliessen': round((m2['Rss'] - m0['Rss']) / 1024, 1)}
+    t3 = T(); n_open = len(hs); hs.clear(); gc.collect(); m2 = mem()
+    return {'k_requested': k, 'k_open': n_open, 'error': error,
+            'rss_kb_per_db': round((m1['Rss'] - m0['Rss']) / n, 1), 'anon_kb_per_db': round((m1['Anonymous'] - m0['Anonymous']) / n, 1),
+            'pss_kb_per_db': round((m1['Pss'] - m0['Pss']) / n, 1), 'fds_per_db': round(fds / n, 2), 'threads': thr, 'virtual_mb_per_db': round(vsz / 1024 / n, 2),
+            'open_ms_per_db': round(ms(t1 - t0) / n, 4), 'close_ms_per_db': round(ms(t3 - t2) / n, 4),
+            'rss_mb_open': round((m1['Rss'] - m0['Rss']) / 1024, 1), 'rss_mb_after_close': round((m2['Rss'] - m0['Rss']) / 1024, 1)}
 
 if __name__ == '__main__':
     e = ENGINES[sys.argv[1]](); phase = sys.argv[2]; n = int(sys.argv[3])
     r = {'engine': e.name, 'version': e.version, 'phase': phase}
-    r.update({'anlegen': anlegen, 'oeffnen': oeffnen, 'halten': halten}[phase](e, n))
+    r.update({'create': phase_create, 'open': phase_open, 'hold': phase_hold}[phase](e, n))
     print(json.dumps(r, ensure_ascii=False))

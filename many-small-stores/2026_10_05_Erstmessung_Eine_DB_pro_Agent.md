@@ -1,94 +1,94 @@
-# Eine Datenbank pro Agent – Messung ObjectBox, SQLite, Turso, libSQL
+# One database per agent – measuring ObjectBox, SQLite, Turso, libSQL
 
-Stand 05.10.2026, dritte Fassung (nach einer Rückfrage zum Arbeitsspeicher) · intern · eine Messung auf einem Rechner, kein Benchmark · nichts davon für außen. Die Deutung muss noch geprüft werden.
+As of 2026-10-05, third version (after a follow-up question about memory) · internal · one measurement on one machine, not a benchmark · none of this is for external use. The interpretation still needs to be reviewed.
 
-Frühere Fassungen vom selben Tag liegen unter `_to_delete_erste_Fassung/` (Python-Paket 4.0.0, nur ObjectBox gegen SQLite; Zahlen überholt, Vermutung zur Grenze falsch) und `_to_delete_zweite_Fassung/` (dort stand noch, der Arbeitsspeicher sei bei ObjectBox der Kostentreiber – das ist mit Abschnitt 3 überholt).
+Earlier versions from the same day are in `_to_delete_erste_Fassung/` (Python package 4.0.0, only ObjectBox against SQLite; numbers outdated, the guess about the limit was wrong) and `_to_delete_zweite_Fassung/` (which still said memory was the cost driver for ObjectBox – superseded by section 3).
 
-## 1 Anlass
+## 1 Background
 
-Supabase hat Turso übernommen (02.10.2026, turso.tech/blog/turso-is-joining-supabase). Tursos These: „One agent, one task, one user" – die Economics müssen bei Millionen Datenbanken funktionieren. Viviens Frage: Wie viel Zeit und Kosten verursacht eine Datenbank, und liegt ObjectBox dabei in derselben Größenordnung wie Turso?
+Supabase has acquired Turso (2026-10-02, turso.tech/blog/turso-is-joining-supabase). Turso's thesis: "One agent, one task, one user" – the economics have to work at millions of databases. Vivien's question: how much time and cost does one database cause, and is ObjectBox in the same order of magnitude as Turso?
 
-## 2 Ergebnis
+## 2 Result
 
-Median aus drei Läufen. Je Datenbank ein Objekttyp mit zehn kleinen Objekten.
+Median of three runs. Per database one object type with ten small objects.
 
 | | ObjectBox 5.3.2 | SQLite 3.53.4 | Turso Database 0.8.1 | libSQL 0.1.11 |
 |---|---|---|---|---|
-| Neu anlegen mit zehn Objekten | 2,5 ms | 2,9 ms | 3,8 ms | 2,6 ms |
-| Platz je Datenbank | 28 KB | 8 KB | 8 KB | 8 KB |
-| Öffnen | 0,36 ms | 0,02 ms | 0,55 ms | 0,05 ms |
-| Erste Abfrage | 0,02 ms | 0,02 ms | 0,14 ms | 0,03 ms |
-| Schließen | 0,02 ms | 0,01 ms | 0,48 ms | 0,01 ms |
-| Summe öffnen, abfragen, schließen | 0,40 ms | 0,06 ms | 1,20 ms | 0,10 ms |
-| Dieselbe Summe mit geleertem Dateicache | 0,75 ms | 0,25 ms | 1,29 ms | 0,21 ms |
-| Arbeitsspeicher je offener Datenbank, Standard | 2,1 MB | 0,15 MB | 2,1 MB | 0,16 MB |
-| Arbeitsspeicher mit Allokator-Einstellung (siehe unten) | **0,04 MB** | 0,15 MB | 2,1 MB | 0,16 MB |
-| Gleichzeitig offen in einem Prozess | 1.022; mit Option und Allokator-Einstellung 6.000 geprüft | 5.000 geprüft | 2.500 geprüft | 5.000 geprüft |
+| Create with ten objects | 2.5 ms | 2.9 ms | 3.8 ms | 2.6 ms |
+| Space per database | 28 KB | 8 KB | 8 KB | 8 KB |
+| Open | 0.36 ms | 0.02 ms | 0.55 ms | 0.05 ms |
+| First query | 0.02 ms | 0.02 ms | 0.14 ms | 0.03 ms |
+| Close | 0.02 ms | 0.01 ms | 0.48 ms | 0.01 ms |
+| Total open, query, close | 0.40 ms | 0.06 ms | 1.20 ms | 0.10 ms |
+| Same total with dropped file cache | 0.75 ms | 0.25 ms | 1.29 ms | 0.21 ms |
+| Memory per open database, default | 2.1 MB | 0.15 MB | 2.1 MB | 0.16 MB |
+| Memory with allocator setting (see below) | **0.04 MB** | 0.15 MB | 2.1 MB | 0.16 MB |
+| Open at the same time in one process | 1,022; with option and allocator setting 6,000 tested | 5,000 tested | 2,500 tested | 5,000 tested |
 
-Turso hat zwei Engines: **Turso Database** ist die neue, in Rust geschriebene; **libSQL** ist der ältere SQLite-Fork. Welche von beiden in Turso Cloud läuft, habe ich nicht geprüft.
+Turso has two engines: **Turso Database** is the new one, written in Rust; **libSQL** is the older SQLite fork. I did not check which of the two runs in Turso Cloud.
 
-## 3 Erklärungen
+## 3 Explanations
 
-**Anlegen.** Alle vier liegen zwischen 2,3 und 3,9 ms. Die Unterschiede zwischen ObjectBox, SQLite und libSQL sind kleiner als die Streuung zwischen den Läufen (SQLite: 2,3 bis 2,9 ms). Turso Database ist klar am langsamsten.
+**Create.** All four are between 2.3 and 3.9 ms. The differences between ObjectBox, SQLite and libSQL are smaller than the spread between runs (SQLite: 2.3 to 2.9 ms). Turso Database is clearly the slowest.
 
-**Platz.** ObjectBox legt zwei Dateien an: `data.mdb` (20 KB = 5 Seiten zu 4 KB) und `lock.mdb` (8 KB = 2 Seiten, davon 4 KB tatsächlich belegt). Die anderen kommen mit 8 KB aus. Stufen bei ObjectBox (Seitengröße 4 KB): nur mit Modell geöffnet, keine Objekte: `data.mdb` 3 Seiten (12 KB) · 1 oder 10 Objekte: 5 Seiten (20 KB) · 100 Objekte: 8 Seiten (32 KB) · 1.000 Objekte: 28 Seiten (112 KB). `lock.mdb` bleibt bei 8 KB. Erwartet waren auf Linux 8 KB; macOS (16-KB-Seiten) ist nicht gemessen. Eine Million ruhende Datenbanken wären 28 GB gegenüber 8 GB – beides auf Objektspeicher ein kleiner Betrag.
+**Space.** ObjectBox creates two files: `data.mdb` (20 KB = 5 pages of 4 KB) and `lock.mdb` (8 KB = 2 pages, of which 4 KB are actually allocated). The others get by with 8 KB. Steps for ObjectBox (page size 4 KB): only opened with the model, no objects: `data.mdb` 3 pages (12 KB) · 1 or 10 objects: 5 pages (20 KB) · 100 objects: 8 pages (32 KB) · 1,000 objects: 28 pages (112 KB). `lock.mdb` stays at 8 KB. 8 KB had been expected on Linux; macOS (16 KB pages) was not measured. One million idle databases would be 28 GB versus 8 GB – either way a small amount on object storage.
 
-**Öffnen und Schließen.** SQLite und libSQL öffnen „faul": Beim Öffnen passiert fast nichts, die Datei wird erst bei der ersten Abfrage gelesen. Vergleichbar ist deshalb nur die Summe. ObjectBox braucht 0,40 ms und ist damit dreimal so schnell wie Turso Database und siebenmal so langsam wie SQLite. Schließen kostet bei ObjectBox 0,02 ms, bei Turso Database 0,48 ms (vermutlich räumt es dabei sein Schreibprotokoll auf; nicht geprüft). Bei ObjectBox muss bei jedem Öffnen das Datenmodell mitgegeben werden; das ist in der Öffnen-Zeit enthalten.
+**Open and close.** SQLite and libSQL open "lazily": almost nothing happens on open, the file is only read on the first query. Only the total is therefore comparable. ObjectBox needs 0.40 ms, which makes it three times as fast as Turso Database and seven times as slow as SQLite. Closing costs 0.02 ms for ObjectBox and 0.48 ms for Turso Database (presumably it cleans up its write-ahead log; not checked). ObjectBox has to be given the data model on every open; that is included in the open time.
 
-**Arbeitsspeicher.** Mit Standardeinstellungen wächst der Prozess je offenem ObjectBox-Store um 2,08 MB. Das ist geprüft, aber es ist kein Speicher, den ObjectBox braucht:
-- **Der Anstieg ist echt und linear.** Der erste Store kostet 0,16 MB anonymen Speicher, jeder weitere 2,06 MB (gemessen bei 10, 100, 250, 500, 1.000, 1.500 und 2.500 offenen Stores). Bei rund 2.900 Stores hat der Kernel den Prozess mit 6,06 GB belegtem Speicher beendet.
-- **Es ist nicht die mmap-Datei.** Von den 2.082 KB entfallen 16 KB auf `data.mdb` und 4 KB auf `lock.mdb`. Die übrigen 2.062 KB liegen im Heap des Prozesses. Die 1 GB virtuelle Abbildung je Store zählt nicht mit.
-- **Ursache:** Beim Öffnen werden zwei große Blöcke angefordert, zusammen 3.080 KB (vermutlich 2 MiB und 1 MiB; welche das sind, ist noch offen). Mit Standardeinstellungen legt glibc sie in den Heap, und der größere wird dabei genullt – dadurch ist er belegt, obwohl ihn bei winzigen Datenbanken niemand benutzt.
-- **Mit einer Einstellung des Allokators fällt das weg.** Die Umgebungsvariable `MALLOC_MMAP_THRESHOLD_=131072` lässt glibc große Blöcke immer per mmap holen; unbenutzte Seiten bleiben dann unbelegt. Ergebnis: **39 KB je offenem Store** (18 KB anonym, 20 KB Datei) statt 2.082 KB. Geprüft bis 6.000 gleichzeitig offene Stores (zusammen mit `no_reader_thread_locals`); dort begrenzen dann die Dateideskriptoren (drei je Store). Öffnen, abfragen, schließen sinkt dabei von 0,38 auf 0,13 ms.
-- **Die anderen drei ändern sich mit derselben Einstellung nicht:** SQLite 153 KB, Turso Database 2.136 KB, libSQL 163 KB. In 1 GB passen damit rund 26.000 offene ObjectBox-Stores, rund 6.800 SQLite- und rund 490 Turso-Datenbanken.
-- **Nicht geprüft:** ob die Einstellung unter Schreiblast Nachteile hat, und wie viel von den Blöcken bei echten Datenmengen tatsächlich belegt wird. Drei Optionen der C-API (`max_readers`, `max_db_size_in_kb`, `no_reader_thread_locals`) ändern am Standardwert nichts.
-- Ohne die Einstellung wird der Speicher nach dem Schließen für den nächsten Store wiederverwendet, geht aber erst nach `malloc_trim` an das Betriebssystem zurück.
+**Memory.** With default settings the process grows by 2.08 MB per open ObjectBox store. This was checked, but it is not memory ObjectBox needs:
+- **The growth is real and linear.** The first store costs 0.16 MB of anonymous memory, each further one 2.06 MB (measured at 10, 100, 250, 500, 1,000, 1,500 and 2,500 open stores). At about 2,900 stores the kernel killed the process at 6.06 GB of used memory.
+- **It is not the mmap file.** Of the 2,082 KB, 16 KB are `data.mdb` and 4 KB `lock.mdb`. The remaining 2,062 KB are in the process heap. The 1 GB virtual mapping per store does not count.
+- **Cause:** On open, two large blocks are requested, together 3,080 KB (presumably 2 MiB and 1 MiB; which ones they are is still open). With default settings glibc puts them on the heap, and the larger one gets zeroed – which makes it resident even though nobody uses it for tiny databases.
+- **An allocator setting removes this.** The environment variable `MALLOC_MMAP_THRESHOLD_=131072` makes glibc always get large blocks via mmap; unused pages then stay unallocated. Result: **39 KB per open store** (18 KB anonymous, 20 KB file) instead of 2,082 KB. Tested up to 6,000 simultaneously open stores (together with `no_reader_thread_locals`); there the file descriptors become the limit (three per store). Open, query, close drops from 0.38 to 0.13 ms with it.
+- **The other three do not change with the same setting:** SQLite 153 KB, Turso Database 2,136 KB, libSQL 163 KB. So 1 GB fits about 26,000 open ObjectBox stores, about 6,800 SQLite and about 490 Turso databases.
+- **Not checked:** whether the setting has drawbacks under write load, and how much of the blocks is actually used with real data volumes. Three options of the C API (`max_readers`, `max_db_size_in_kb`, `no_reader_thread_locals`) change nothing about the default value.
+- Without the setting, the memory is reused for the next store after closing, but only returned to the operating system after `malloc_trim`.
 
-**Grenze bei 1.022.** Die Ursache ist gefunden: Linux erlaubt je Prozess 1.024 Thread-lokale Schlüssel, und ObjectBox belegt mit Standardeinstellungen einen je offenem Store. Geprüft durch Vorbelegen: mit 500 belegten Schlüsseln lassen sich 522 Stores öffnen, mit 900 belegten 122. Die Option `no_reader_thread_locals` hebt die Grenze auf (2.500 Stores ohne Fehler geöffnet). Das ist keine Eigenheit meiner Testumgebung, sondern gilt auf Linux allgemein. Meine erste Vermutung (Grenze für gesperrten Speicher) war falsch: Halbieren dieser Grenze änderte nichts.
+**Limit at 1,022.** The cause has been found: Linux allows 1,024 thread-local keys per process, and with default settings ObjectBox takes one per open store. Verified by pre-allocating: with 500 keys taken, 522 stores can be opened, with 900 taken, 122. The option `no_reader_thread_locals` removes the limit (2,500 stores opened without errors). This is not a quirk of my test environment but applies to Linux in general. My first guess (the locked-memory limit) was wrong: halving that limit changed nothing.
 
-**Was daraus folgt.**
-1. Je Datenbank liegt ObjectBox mindestens in der Größenordnung von Tursos neuer Engine: schneller beim Anlegen, Öffnen und Schließen, größer auf der Platte.
-2. Zeit ist kein Thema. Öffnen, abfragen und schließen bleibt überall unter 1,3 ms.
-3. Der Arbeitsspeicher ist bei ObjectBox kein grundsätzliches Problem: Mit einer Allokator-Einstellung braucht ein offener Store 39 KB und damit ein Viertel von SQLite und ein Fünfzigstel von Turso Database. Mit Standardeinstellungen sind es 2,1 MB.
-4. Auf den Anwendungsfall optimiert ist noch nichts. Die beiden Einstellungen hier sind von außen gesetzt; ob man sie in ObjectBox selbst lösen sollte, ist eine offene Frage.
+**What follows from this.**
+1. Per database, ObjectBox is at least in the same order of magnitude as Turso's new engine: faster at creating, opening and closing, larger on disk.
+2. Time is not an issue. Open, query and close stays below 1.3 ms everywhere.
+3. Memory is not a fundamental problem for ObjectBox: with an allocator setting an open store needs 39 KB, which is a quarter of SQLite and a fiftieth of Turso Database. With default settings it is 2.1 MB.
+4. Nothing has been optimized for the use case yet. Both settings here are applied from outside; whether they should be solved inside ObjectBox itself is an open question.
 
-## 4 Vorbehalte
+## 4 Caveats
 
-- **Ein Rechner, drei Läufe.** Cloud-VM mit 2 virtuellen Kernen (Xeon 2,1 GHz), 8 GB RAM, Linux 6.18, ext4 auf virtueller Platte. Je Lauf 10.000 Datenbanken angelegt, 2.000 nacheinander geöffnet, 1.000 gleichzeitig offen gehalten. Die Spannen stehen in `ergebnisse.jsonl`.
-- **Winzige Datenbanken.** Zehn kleine Objekte. Das sagt nichts über größere Datenmengen, parallele Zugriffe, Abfragen, Vektorsuche oder Sync.
-- **Standardeinstellungen, nicht angeglichen.** SQLite und libSQL liefen mit Rollback-Journal und `synchronous=FULL`, Turso Database mit WAL und `synchronous=FULL`, ObjectBox mit seinen Standardwerten (welche Dauerhaftigkeit die bedeuten, habe ich nicht geprüft). Auf einer virtuellen Platte kann das Sichern auf die Platte unrealistisch schnell sein.
-- **Alles über Python.** ObjectBox über die offizielle C-API mit einer selbst geschriebenen dünnen Hülle (`ctypes`), weil das Python-Paket auf PyPI (4.0.0, Mai 2024) einen alten Kern bündelt. Das ist kein offizielles Binding. Der Python-Anteil kostet bei allen vier etwas Zeit.
-- **„Geleerter Dateicache"** heißt: Der Zwischenspeicher von Linux wurde geleert. Der Rechner darunter kann die Dateien trotzdem noch vorhalten. Ein echter Kaltstart aus Objektspeicher ist das nicht.
-- **Arbeitsspeicher** ist der Zuwachs des Prozesses (RSS) bei 1.000 offenen Datenbanken, jede einmal abgefragt. Bei Turso Database habe ich keine eigene Option probiert, bei ObjectBox drei; die Allokator-Einstellung lief bei allen vieren.
-- **Turso Cloud ist nicht gemessen.** Was eine Datenbank Turso im Betrieb kostet, sieht man von außen nicht. Turso beschreibt seinen Dienst als „diskless" mit WAL auf S3; das ist ein anderer Aufbau als lokale Dateien.
-- **Nicht gemessen:** ObjectBox 6.0 beta, andere Betriebssysteme, andere Sprachen.
+- **One machine, three runs.** Cloud VM with 2 virtual cores (Xeon 2.1 GHz), 8 GB RAM, Linux 6.18, ext4 on a virtual disk. Per run 10,000 databases created, 2,000 opened one after another, 1,000 kept open at the same time. The ranges are in `ergebnisse.jsonl`.
+- **Tiny databases.** Ten small objects. This says nothing about larger data volumes, concurrent access, queries, vector search or sync.
+- **Default settings, not aligned.** SQLite and libSQL ran with rollback journal and `synchronous=FULL`, Turso Database with WAL and `synchronous=FULL`, ObjectBox with its defaults (I did not check what durability they imply). On a virtual disk, syncing to disk can be unrealistically fast.
+- **Everything via Python.** ObjectBox through the official C API with a self-written thin wrapper (`ctypes`), because the Python package on PyPI (4.0.0, May 2024) bundles an old core. This is not an official binding. The Python share costs some time for all four.
+- **"Dropped file cache"** means: the Linux page cache was dropped. The machine underneath may still cache the files. This is not a real cold start from object storage.
+- **Memory** is the growth of the process (RSS) with 1,000 open databases, each queried once. For Turso Database I tried no options of its own, for ObjectBox three; the allocator setting ran for all four.
+- **Turso Cloud was not measured.** What a database costs Turso in operation cannot be seen from outside. Turso describes its service as "diskless" with WAL on S3; that is a different architecture than local files.
+- **Not measured:** ObjectBox 6.0 beta, other operating systems, other languages.
 
-## 5 Versionen
+## 5 Versions
 
-| | Version | veröffentlicht | Quelle |
+| | Version | released | Source |
 |---|---|---|---|
-| ObjectBox C/C++ | 5.3.2 (letzte stabile; 6.0.0 beta nicht verwendet) | 05.05.2026 | github.com/objectbox/objectbox-c/releases |
-| SQLite | 3.53.4, über apsw 3.53.4.0 | 24.07.2026 | sqlite.org/chronology.html |
-| Turso Database | pyturso 0.8.1 | 29.09.2026 | pypi.org/project/pyturso |
-| libSQL | libsql 0.1.11 | 02.09.2025 | pypi.org/project/libsql |
+| ObjectBox C/C++ | 5.3.2 (latest stable; 6.0.0 beta not used) | 2026-05-05 | github.com/objectbox/objectbox-c/releases |
+| SQLite | 3.53.4, via apsw 3.53.4.0 | 2026-07-24 | sqlite.org/chronology.html |
+| Turso Database | pyturso 0.8.1 | 2026-09-29 | pypi.org/project/pyturso |
+| libSQL | libsql 0.1.11 | 2025-09-02 | pypi.org/project/libsql |
 
-Bei Turso zeigt die GitHub-Seite 0.7.0 als „Latest", PyPI aber 0.8.1. Verwendet ist die Fassung von PyPI.
+For Turso, the GitHub page shows 0.7.0 as "Latest", but PyPI shows 0.8.1. The PyPI version was used.
 
-## 6 Offene Fragen
+## 6 Open questions
 
-1. Welche zwei Blöcke (zusammen 3.080 KB) werden beim Öffnen angefordert, und ließen sie sich kleiner oder erst bei Bedarf anlegen?
-2. Hat `MALLOC_MMAP_THRESHOLD_` unter echter Last Nachteile, oder wäre ein anderer Weg sauberer?
-3. Ist `no_reader_thread_locals` für einen Dienst mit vielen Stores unbedenklich?
-4. Braucht ein Store `lock.mdb`, wenn nur ein Prozess zugreift?
-5. Passen die Zahlen zu dem, was von der C-Bibliothek zu erwarten ist?
+1. Which two blocks (together 3,080 KB) are requested on open, and could they be made smaller or allocated only when needed?
+2. Does `MALLOC_MMAP_THRESHOLD_` have drawbacks under real load, or would another approach be cleaner?
+3. Is `no_reader_thread_locals` safe for a service with many stores?
+4. Does a store need `lock.mdb` if only one process accesses it?
+5. Do the numbers match what is expected from the C library?
 
-## 7 Nachstellen
+## 7 Reproduce
 
-Voraussetzung: Linux, Python 3, `pip install apsw pyturso libsql flatbuffers`, dazu `objectbox-linux-x64.tar.gz` (5.3.2) nach `obxc/` entpackt.
+Prerequisites: Linux, Python 3, `pip install apsw pyturso libsql flatbuffers`, plus `objectbox-linux-x64.tar.gz` (5.3.2) extracted to `obxc/`.
 
-- `./lauf.sh <Laufnummer>` – ein kompletter Lauf über alle vier Engines (für den Lauf mit geleertem Dateicache als root).
-- `python3 auswertung.py` – fasst `ergebnisse.jsonl` zusammen.
-- `python3 grenze_test.py` – der Test zur Grenze bei 1.022.
-- `OBX_TUNE=readers,maxkb,notls python3 messung.py obx halten 200` – die drei Optionen.
-- `python3 ram_pruefung.py 1000` – Arbeitsspeicher stufenweise, nach Speicherbereich und aus Sicht des Allokators. Mit `MALLOC_MMAP_THRESHOLD_=131072` davor für die Allokator-Einstellung.
-- `MALLOC_MMAP_THRESHOLD_=131072 OBX_TUNE=notls python3 messung.py obx halten 6000` – 6.000 gleichzeitig offene Stores.
+- `./lauf.sh <run number>` – one complete run across all four engines (as root for the run with dropped file cache).
+- `python3 auswertung.py` – summarizes `ergebnisse.jsonl`.
+- `python3 grenze_test.py` – the test for the limit at 1,022.
+- `OBX_TUNE=readers,maxkb,notls python3 messung.py obx hold 200` – the three options.
+- `python3 ram_pruefung.py 1000` – memory step by step, by memory region and from the allocator's point of view. Prefix with `MALLOC_MMAP_THRESHOLD_=131072` for the allocator setting.
+- `MALLOC_MMAP_THRESHOLD_=131072 OBX_TUNE=notls python3 messung.py obx hold 6000` – 6,000 simultaneously open stores.

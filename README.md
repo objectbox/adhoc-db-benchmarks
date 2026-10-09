@@ -1,7 +1,7 @@
 # Adhoc DB Benchmarks
 
-Ad-hoc-Messungen, kein offizieller Benchmark. Jede Messung liegt in einem eigenen Ordner mit Code, Rohdaten und Auswertung.
+Ad-hoc measurements, not an official benchmark. Each measurement lives in its own folder with code, raw data and evaluation.
 
-| Ordner | Was | Stand |
+| Folder | What | As of |
 |---|---|---|
-| [`many-small-stores/`](many-small-stores/README.md) | „Eine Datenbank pro Agent“: viele kleine Stores je Engine – ObjectBox, SQLite, Turso Database, libSQL; 100.000 Stores je Engine, ObjectBox zusätzlich 500.000 | Oktober 2026 |
+| [`many-small-stores/`](many-small-stores/README.md) | "One database per agent": many small stores per engine – ObjectBox, SQLite, Turso Database, libSQL; 100,000 stores per engine, ObjectBox additionally 500,000 | October 2026 |
