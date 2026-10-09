@@ -1,7 +1,7 @@
 #!/bin/bash
 # Large run, one command:  ./run_large.sh [N] [M] [K] [engines] [output file]
 #   N = stores per engine (default 100000), M = random stores per open run (10000),
-#   K = stores open at the same time (1000). Needs root for the cold run (drop_caches).
+#   K = stores open at the same time (1000). Needs root for the cold run (drop_caches); skipped otherwise.
 # Per engine two settings: standard, and mallopt (one allocator line in the benchmark program).
 # Per setting: create, 3x open warm, 3x open cold (page cache dropped before), hold.
 N=${1:-100000}; M=${2:-10000}; K=${3:-1000}; ENGINES=${4:-"obx sqlite turso libsql"}; OUT=${5:-results_large.jsonl}
@@ -17,10 +17,14 @@ for E in $ENGINES; do
     for L in 1 2 3; do
       log "$E $MODE open warm $L"; TAG="\"run\": $L, \"cache\": \"warm\","; run $E open $N $M $L
     done
-    for L in 1 2 3; do
-      sync; echo 3 > /proc/sys/vm/drop_caches
-      log "$E $MODE open cold $L"; TAG="\"run\": $L, \"cache\": \"cold\","; run $E open $N $M $((L+10))
-    done
+    if [ -w /proc/sys/vm/drop_caches ]; then
+      for L in 1 2 3; do
+        sync; echo 3 > /proc/sys/vm/drop_caches
+        log "$E $MODE open cold $L"; TAG="\"run\": $L, \"cache\": \"cold\","; run $E open $N $M $((L+10))
+      done
+    else
+      log "$E $MODE open cold: skipped (dropping the page cache needs root)"
+    fi
     log "$E $MODE hold $K"; TAG="\"run\": 1,"; run $E hold $N $K 1
   done
 done
