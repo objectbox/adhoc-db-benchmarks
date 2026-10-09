@@ -5,7 +5,7 @@ Usage (each phase in a fresh process so memory is clean):
   python3 measure.py <engine> create <N>      creates N databases with 10 objects each
   python3 measure.py <engine> open   <M>      opens M existing ones one after another: open, read, close
   python3 measure.py <engine> hold   <K>      keeps K open at the same time and measures memory
-  engine: obx | obx_cached | sqlite | turso | libsql
+  engine: obx | obx_cached | obx_nosync | sqlite | turso | libsql
 Output: one JSON line.
 
 ObjectBox is accessed through its Python API (package objectbox 5.0.0b1 with objectbox-clib 5.3.2);
@@ -56,6 +56,13 @@ class ObxCached(Obx):
         if not hasattr(self, '_model'): self._model = super().model()
         return self._model
 
+class ObxNoSync(ObxCached):
+    """Like ObxCached, plus skip_model_sync: existing stores are opened with the schema stored in their database,
+    without checking it against the model (objectbox 5.0.0b1). New stores are still created with the model."""
+    name = 'obx_nosync'
+    def _open(self, path):
+        return self.Store(model=self.model(), directory=path, model_json_file=MODEL_JSON, skip_model_sync=True, **self.options)
+
 # ---------------------------------------------------------------- SQL engines
 DDL = 'create table note(id integer primary key, text text, ts integer)'
 INS = 'insert into note(text, ts) values(?, ?)'
@@ -91,7 +98,7 @@ class Libsql:
     def read(self, c): return c.execute(CNT).fetchall()[0][0]
     def close(self, c): c.close()
 
-ENGINES = {'obx': Obx, 'obx_cached': ObxCached, 'sqlite': Sqlite, 'turso': Turso, 'libsql': Libsql}
+ENGINES = {'obx': Obx, 'obx_cached': ObxCached, 'obx_nosync': ObxNoSync, 'sqlite': Sqlite, 'turso': Turso, 'libsql': Libsql}
 
 # ---------------------------------------------------------------- Helpers
 def path(e, i): return f'{ROOT}/{e.name}/{i // 1000}/{i}'
