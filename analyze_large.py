@@ -3,7 +3,7 @@
 import json, statistics, sys
 from collections import defaultdict
 rows = [json.loads(l) for f in sys.argv[1:] for l in open(f)]
-E = ['obx', 'sqlite', 'turso', 'libsql']; MODES = ['standard', 'mallopt']
+E = ['obx', 'obx_cached', 'sqlite', 'turso', 'libsql']; MODES = ['standard', 'mallopt']
 def pick(e, mode, phase, cache=None, n=None):
     return [r for r in rows if r['engine'] == e and r['setting'] == mode and r['phase'] == phase and (cache is None or r.get('cache') == cache) and (n is None or r['n'] == n)]
 def med(xs): return statistics.median(xs)

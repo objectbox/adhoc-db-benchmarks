@@ -2,7 +2,7 @@
 """Large run "one database per agent": many small stores per engine.
 
 Usage:  python3 measure_large.py <engine> <phase> <N> [M] [seed]
-  engine: obx | sqlite | turso | libsql
+  engine: obx | obx_cached | sqlite | turso | libsql
   phase:  create  - create N new stores, write ten small objects each, close
           open    - M random ones of the N stores: open, one query, close
           hold    - keep M stores open at the same time: memory, file descriptors
