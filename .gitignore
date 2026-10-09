@@ -1,0 +1,5 @@
+__pycache__/
+# benchmark data directories (BENCH_ROOT) and the ObjectBox C library
+data*/
+obxc/
+.idea/
