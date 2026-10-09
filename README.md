@@ -80,6 +80,8 @@ BENCH_ROOT=data_500k ./run_large.sh 500000 10000 1000 "obx" results_large_500k.j
 python3 analyze_large.py results_large.jsonl results_large_500k.jsonl
 ```
 
+Note: these numbers were measured with ObjectBox driven through the C API (ctypes); `measure.py` now uses the ObjectBox Python API. To reproduce them, check out commit `79a2eeb`.
+
 Needs root (for `drop_caches`), `libobjectbox.so` 5.3.2 under `obxc/lib/`, Python 3.11 with `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`. Files in this repository: `measure.py` (engine classes), `measure_large.py`, `run_large.sh`, `analyze_large.py`, raw data `results_large.jsonl` and `results_large_500k.jsonl`, logs `run_large.log` and `run_large_500k.log`, `environment_large.txt`.
 
 Run times: 100,000 per engine in both settings 46 minutes (16:36–17:22 UTC), ObjectBox 500,000 in both settings 43 minutes (17:28–18:11 UTC). No errors.

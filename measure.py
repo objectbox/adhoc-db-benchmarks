@@ -8,77 +8,46 @@ Usage (each phase in a fresh process so memory is clean):
   engine: obx | sqlite | turso | libsql
 Output: one JSON line.
 
-ObjectBox is accessed through the official C API (libobjectbox.so) via ctypes,
-because the Python package on PyPI (4.0.0, May 2024) bundles an older core.
-Path to the library: environment variable OBX_LIB.
+ObjectBox is accessed through its Python API (package objectbox 5.0.0b1 with objectbox-clib 5.3.2);
+the model IDs are kept in objectbox-model.json next to this file.
 """
-import ctypes, json, os, statistics, sys, time
+import json, os, statistics, sys, time
 
 ROWS = 10
 ROOT = os.environ.get('BENCH_ROOT', 'data')
 
-# ---------------------------------------------------------------- ObjectBox (C-API)
+# ---------------------------------------------------------------- ObjectBox (Python API)
+MODEL_JSON = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'objectbox-model.json')
+
 class Obx:
+    """ObjectBox through its Python API (package objectbox). A new Model per store, i.e. the model is synced with
+    the model JSON file on every open, as the objectbox package did for every Store before 5.0.0b1."""
     name = 'obx'
     def __init__(self):
-        import flatbuffers
-        self.fb = flatbuffers
-        C = ctypes.CDLL(os.environ.get('OBX_LIB', 'obxc/lib/libobjectbox.so'))
-        vp, u64, u32, cp = ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint32, ctypes.c_char_p
-        def sig(fn, res, *args): f = getattr(C, fn); f.restype = res; f.argtypes = list(args); return f
-        self.version_string = sig('obx_version_string', cp)
-        self.err = sig('obx_last_error_message', cp)
-        self.model = sig('obx_model', vp)
-        self.m_entity = sig('obx_model_entity', ctypes.c_int, vp, cp, u32, u64)
-        self.m_prop = sig('obx_model_property', ctypes.c_int, vp, cp, ctypes.c_int, u32, u64)
-        self.m_flags = sig('obx_model_property_flags', ctypes.c_int, vp, u32)
-        self.m_lastprop = sig('obx_model_entity_last_property_id', ctypes.c_int, vp, u32, u64)
-        self.m_lastent = sig('obx_model_last_entity_id', None, vp, u32, u64)
-        self.opt = sig('obx_opt', vp)
-        self.opt_dir = sig('obx_opt_directory', ctypes.c_int, vp, cp)
-        self.opt_model = sig('obx_opt_model', ctypes.c_int, vp, vp)
-        self.opt_max_readers = sig('obx_opt_max_readers', None, vp, ctypes.c_uint)
-        self.opt_max_kb = sig('obx_opt_max_db_size_in_kb', None, vp, u64)
-        self.opt_no_tls = sig('obx_opt_no_reader_thread_locals', None, vp, ctypes.c_bool)
-        self.store_open = sig('obx_store_open', vp, vp)
-        self.store_close = sig('obx_store_close', ctypes.c_int, vp)
-        self.box = sig('obx_box', vp, vp, u32)
-        self.id_for_put = sig('obx_box_id_for_put', u64, vp, u64)
-        self.put = sig('obx_box_put', ctypes.c_int, vp, u64, ctypes.c_char_p, ctypes.c_size_t)
-        self.count = sig('obx_box_count', ctypes.c_int, vp, u64, ctypes.POINTER(u64))
-        self.txn_write = sig('obx_txn_write', vp, vp)
-        self.txn_success = sig('obx_txn_success', ctypes.c_int, vp)
-        self.version = self.version_string().decode()
-        self.tune = os.environ.get('OBX_TUNE', '')
+        import objectbox
+        from objectbox import Entity, Id, Int64, Model, Store, String
+        @Entity()
+        class Note:
+            id = Id
+            text = String
+            ts = Int64
+        self.Note, self.Model, self.Store = Note, Model, Store
+        self.version = f'ObjectBox {objectbox.version} (C library {objectbox.version_core})'
+        tune = os.environ.get('OBX_TUNE', '')
+        self.options = {}
+        if 'readers' in tune: self.options['max_readers'] = 8
+        if 'maxkb' in tune: self.options['max_db_size_in_kb'] = 10240
+        if 'notls' in tune: self.options['no_reader_thread_locals'] = True
+    def model(self):
+        m = self.Model(); m.entity(self.Note); return m
     def _open(self, path):
-        m = self.model()
-        self.m_entity(m, b'Note', 1, 0x1000000000000001)
-        self.m_prop(m, b'id', 6, 1, 0x1000000000000011); self.m_flags(m, 1)
-        self.m_prop(m, b'text', 9, 2, 0x1000000000000012)
-        self.m_prop(m, b'ts', 6, 3, 0x1000000000000013)
-        self.m_lastprop(m, 3, 0x1000000000000013)
-        self.m_lastent(m, 1, 0x1000000000000001)
-        o = self.opt(); self.opt_dir(o, path.encode()); self.opt_model(o, m)
-        if 'readers' in self.tune: self.opt_max_readers(o, 8)
-        if 'maxkb' in self.tune: self.opt_max_kb(o, 10240)
-        if 'notls' in self.tune: self.opt_no_tls(o, True)
-        s = self.store_open(o)
-        if not s: raise RuntimeError(self.err().decode())
-        return s
+        return self.Store(model=self.model(), directory=path, model_json_file=MODEL_JSON, **self.options)
     def create(self, path): os.makedirs(path); return self._open(path)
     def open(self, path): return self._open(path)
     def write(self, s, i):
-        b = self.box(s, 1); t = self.txn_write(s)
-        for j in range(ROWS):
-            oid = self.id_for_put(b, 0)
-            fb = self.fb.Builder(96); txt = fb.CreateString(f'note {j} of agent {i}')
-            fb.StartObject(3); fb.PrependInt64Slot(0, oid, 0); fb.PrependUOffsetTRelativeSlot(1, txt, 0); fb.PrependInt64Slot(2, j, 0)
-            fb.Finish(fb.EndObject()); d = bytes(fb.Output())
-            if self.put(b, oid, d, len(d)): raise RuntimeError(self.err().decode())
-        if self.txn_success(t): raise RuntimeError(self.err().decode())
-    def read(self, s):
-        n = ctypes.c_uint64(0); self.count(self.box(s, 1), 0, ctypes.byref(n)); return n.value
-    def close(self, s): self.store_close(s)
+        s.box(self.Note).put([self.Note(text=f'note {j} of agent {i}', ts=j) for j in range(ROWS)])  # one transaction
+    def read(self, s): return s.box(self.Note).count()
+    def close(self, s): s.close()
 
 # ---------------------------------------------------------------- SQL engines
 DDL = 'create table note(id integer primary key, text text, ts integer)'

@@ -3,3 +3,5 @@ __pycache__/
 data*/
 obxc/
 .idea/
+# Python virtual environment for the benchmark (see AGENTS.md)
+.venv/

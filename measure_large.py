@@ -9,7 +9,6 @@ Usage:  python3 measure_large.py <engine> <phase> <N> [M] [seed]
 Environment:
   BENCH_ROOT     data directory (default: data_large)
   BENCH_MALLOPT  =1 sets mallopt(M_MMAP_THRESHOLD, 131072) in the process; otherwise defaults
-  OBX_LIB        path to libobjectbox.so
 
 The engine classes (schema, writing, query) come unchanged from measure.py.
 One process per invocation, so memory values do not depend on previous phases.

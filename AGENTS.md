@@ -15,8 +15,8 @@ Measures the fixed cost of many tiny databases (one per agent) for ObjectBox, SQ
 ### Requirements
 
 - Root (for `echo 3 > /proc/sys/vm/drop_caches` in cold-cache runs)
-- `obxc/lib/libobjectbox.so` (ObjectBox C library 5.3.2; not tracked in git) or `OBX_LIB=<path>`
-- Python 3.11 with `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`
+- A Python venv in `.venv/` (not tracked in git; the scripts use it if present) with `objectbox 5.0.0b1` (wheels built from objectbox-python, branch `dev`; brings `objectbox-clib 5.3.2`, the ObjectBox C library), `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`:
+  `python3 -m venv .venv && .venv/bin/pip install objectbox==5.0.0b1 --find-links <objectbox-python>/dist apsw==3.53.4.0 pyturso==0.8.1 libsql==0.1.11`
 
 ### Commands
 
@@ -34,11 +34,11 @@ python3 measure_large.py <engine> hold   <N> <K> [seed]
 # Older, smaller first measurement (2026-10-05): ./run.sh <run#> [N] [M] [K], evaluated by analyze.py
 ```
 
-Environment variables: `BENCH_ROOT` (data dir; `data` for `measure.py`, `data_large` for `measure_large.py`), `BENCH_MALLOPT=1` (sets `mallopt(M_MMAP_THRESHOLD, 131072)` before anything else is loaded), `OBX_LIB`, `OBX_TUNE` (substring flags `readers`, `maxkb`, `notls` for ObjectBox store options).
+Environment variables: `BENCH_ROOT` (data dir; `data` for `measure.py`, `data_large` for `measure_large.py`), `BENCH_MALLOPT=1` (sets `mallopt(M_MMAP_THRESHOLD, 131072)` before anything else is loaded), `PYTHON` (interpreter for the shell scripts; default `.venv/bin/python`), `OBX_TUNE` (substring flags `readers`, `maxkb`, `notls` for ObjectBox store options).
 
 ### Architecture
 
-- `measure.py` is the core: one class per engine (`Obx`, `Sqlite`, `Turso`, `Libsql`) with the same interface `create/open/write/read/close`, registered in `ENGINES`, plus helpers (`path`, `mem`, `status`). ObjectBox is driven through the **C API via ctypes** (model built by hand with fixed UIDs, objects encoded with raw FlatBuffers), because the PyPI package bundles an older core. The SQL engines share `DDL`/`INS`/`CNT`. Schema everywhere: one table/type `Note(id, text, ts)`, 10 rows written in one transaction.
+- `measure.py` is the core: one class per engine (`Obx`, `Sqlite`, `Turso`, `Libsql`) with the same interface `create/open/write/read/close`, registered in `ENGINES`, plus helpers (`path`, `mem`, `status`). ObjectBox is driven through its **Python API** (`objectbox` package: `Store`, `Box`, an `@Entity` class `Note`); the model IDs are kept in the committed `objectbox-model.json` (do not delete it: stores created with other IDs cannot be opened). Until 2026-10-06 the C API was used via ctypes (see the git history and the older write-ups). The SQL engines share `DDL`/`INS`/`CNT`. Schema everywhere: one table/type `Note(id, text, ts)`, 10 rows written in one transaction.
 - `measure_large.py` imports the engine classes unchanged from `measure.py` and adds its own phases (random sampling with seeds, p99, directory-inclusive disk usage). `BENCH_ROOT` must be set before `import measure`, since `ROOT` is read at import time.
 - Store layout on disk: `<ROOT>/<engine>/<i // 1000>/<i>/`.
 - Each phase runs in a **fresh process** so memory numbers are not polluted by earlier phases; the shell scripts orchestrate this and prefix each JSON line with run metadata (`run`, `cache`) via `sed`, appending to a `.jsonl` file.
