@@ -54,7 +54,7 @@ Turso has two engines: **Turso Database** is the new one, written in Rust; **lib
 
 ## 4 Caveats
 
-- **One machine, three runs.** Cloud VM with 2 virtual cores (Xeon 2.1 GHz), 8 GB RAM, Linux 6.18, ext4 on a virtual disk. Per run 10,000 databases created, 2,000 opened one after another, 1,000 kept open at the same time. The ranges are in `ergebnisse.jsonl`.
+- **One machine, three runs.** Cloud VM with 2 virtual cores (Xeon 2.1 GHz), 8 GB RAM, Linux 6.18, ext4 on a virtual disk. Per run 10,000 databases created, 2,000 opened one after another, 1,000 kept open at the same time. The ranges are in `results.jsonl`.
 - **Tiny databases.** Ten small objects. This says nothing about larger data volumes, concurrent access, queries, vector search or sync.
 - **Default settings, not aligned.** SQLite and libSQL ran with rollback journal and `synchronous=FULL`, Turso Database with WAL and `synchronous=FULL`, ObjectBox with its defaults (I did not check what durability they imply). On a virtual disk, syncing to disk can be unrealistically fast.
 - **Everything via Python.** ObjectBox through the official C API with a self-written thin wrapper (`ctypes`), because the Python package on PyPI (4.0.0, May 2024) bundles an old core. This is not an official binding. The Python share costs some time for all four.
@@ -86,9 +86,9 @@ For Turso, the GitHub page shows 0.7.0 as "Latest", but PyPI shows 0.8.1. The Py
 
 Prerequisites: Linux, Python 3, `pip install apsw pyturso libsql flatbuffers`, plus `objectbox-linux-x64.tar.gz` (5.3.2) extracted to `obxc/`.
 
-- `./lauf.sh <run number>` – one complete run across all four engines (as root for the run with dropped file cache).
-- `python3 auswertung.py` – summarizes `ergebnisse.jsonl`.
-- `python3 grenze_test.py` – the test for the limit at 1,022.
-- `OBX_TUNE=readers,maxkb,notls python3 messung.py obx hold 200` – the three options.
-- `python3 ram_pruefung.py 1000` – memory step by step, by memory region and from the allocator's point of view. Prefix with `MALLOC_MMAP_THRESHOLD_=131072` for the allocator setting.
-- `MALLOC_MMAP_THRESHOLD_=131072 OBX_TUNE=notls python3 messung.py obx hold 6000` – 6,000 simultaneously open stores.
+- `./run.sh <run number>` – one complete run across all four engines (as root for the run with dropped file cache).
+- `python3 analyze.py` – summarizes `results.jsonl`.
+- `python3 limit_test.py` – the test for the limit at 1,022.
+- `OBX_TUNE=readers,maxkb,notls python3 measure.py obx hold 200` – the three options.
+- `python3 ram_check.py 1000` – memory step by step, by memory region and from the allocator's point of view. Prefix with `MALLOC_MMAP_THRESHOLD_=131072` for the allocator setting.
+- `MALLOC_MMAP_THRESHOLD_=131072 OBX_TUNE=notls python3 measure.py obx hold 6000` – 6,000 simultaneously open stores.

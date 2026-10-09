@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluates ergebnisse_gross*.jsonl: median across the three runs, plus the range."""
+"""Evaluates results_large*.jsonl: median across the three runs, plus the range."""
 import json, statistics, sys
 from collections import defaultdict
 rows = [json.loads(l) for f in sys.argv[1:] for l in open(f)]

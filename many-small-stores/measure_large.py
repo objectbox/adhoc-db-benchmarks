@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """Large run "one database per agent": many small stores per engine.
 
-Usage:  python3 messung_gross.py <engine> <phase> <N> [M] [seed]
+Usage:  python3 measure_large.py <engine> <phase> <N> [M] [seed]
   engine: obx | sqlite | turso | libsql
   phase:  create  - create N new stores, write ten small objects each, close
           open    - M random ones of the N stores: open, one query, close
           hold    - keep M stores open at the same time: memory, file descriptors
 Environment:
-  BENCH_ROOT     data directory (default: data_gross)
+  BENCH_ROOT     data directory (default: data_large)
   BENCH_MALLOPT  =1 sets mallopt(M_MMAP_THRESHOLD, 131072) in the process; otherwise defaults
   OBX_LIB        path to libobjectbox.so
 
-The engine classes (schema, writing, query) come unchanged from messung.py.
+The engine classes (schema, writing, query) come unchanged from measure.py.
 One process per invocation, so memory values do not depend on previous phases.
 """
 import ctypes, json, os, random, statistics, sys, time
@@ -21,9 +21,9 @@ if TUNED:
     M_MMAP_THRESHOLD = -3
     assert ctypes.CDLL('libc.so.6').mallopt(M_MMAP_THRESHOLD, 131072) == 1
 
-os.environ.setdefault('BENCH_ROOT', 'data_gross')
-import messung as m            # reads BENCH_ROOT on import
-from messung import ENGINES, ROWS, path, mem, status, T
+os.environ.setdefault('BENCH_ROOT', 'data_large')
+import measure as m            # reads BENCH_ROOT on import
+from measure import ENGINES, ROWS, path, mem, status, T
 
 def ms(ns): return ns / 1e6
 def stat(xs):

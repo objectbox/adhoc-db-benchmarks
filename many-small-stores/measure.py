@@ -2,9 +2,9 @@
 """One database per agent - measuring ObjectBox, SQLite, Turso, libSQL.
 
 Usage (each phase in a fresh process so memory is clean):
-  python3 messung.py <engine> create <N>      creates N databases with 10 objects each
-  python3 messung.py <engine> open   <M>      opens M existing ones one after another: open, read, close
-  python3 messung.py <engine> hold   <K>      keeps K open at the same time and measures memory
+  python3 measure.py <engine> create <N>      creates N databases with 10 objects each
+  python3 measure.py <engine> open   <M>      opens M existing ones one after another: open, read, close
+  python3 measure.py <engine> hold   <K>      keeps K open at the same time and measures memory
   engine: obx | sqlite | turso | libsql
 Output: one JSON line.
 

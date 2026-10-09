@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Checks whether and where memory grows per open ObjectBox store.
-Usage: python3 ram_pruefung.py <K>     (first: python3 messung.py obx create 3000)
+Usage: python3 ram_check.py <K>     (first: python3 measure.py obx create 3000)
 Prints RSS, anonymous and file-backed share per step, plus the breakdown by memory region
 and the allocator's numbers (mallinfo2)."""
 import ctypes, os, re, sys
 sys.argv, K = ['x'], int(sys.argv[1])
-import messung as M
+import measure as M
 libc = ctypes.CDLL('libc.so.6')
 class MI(ctypes.Structure):
     _fields_ = [(n, ctypes.c_size_t) for n in ('arena','ordblks','smblks','hblks','hblkhd','usmblks','fsmblks','uordblks','fordblks','keepcost')]

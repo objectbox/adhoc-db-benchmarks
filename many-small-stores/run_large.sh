@@ -1,13 +1,13 @@
 #!/bin/bash
-# Large run, one command:  ./lauf_gross.sh [N] [M] [K] [engines] [output file]
+# Large run, one command:  ./run_large.sh [N] [M] [K] [engines] [output file]
 #   N = stores per engine (default 100000), M = random stores per open run (10000),
 #   K = stores open at the same time (1000). Needs root for the cold run (drop_caches).
 # Per engine two settings: standard, and mallopt (one allocator line in the benchmark program).
 # Per setting: create, 3x open warm, 3x open cold (page cache dropped before), hold.
-N=${1:-100000}; M=${2:-10000}; K=${3:-1000}; ENGINES=${4:-"obx sqlite turso libsql"}; OUT=${5:-ergebnisse_gross.jsonl}
-cd "$(dirname "$0")"; export OBX_LIB=${OBX_LIB:-obxc/lib/libobjectbox.so}; export BENCH_ROOT=${BENCH_ROOT:-data_gross}
+N=${1:-100000}; M=${2:-10000}; K=${3:-1000}; ENGINES=${4:-"obx sqlite turso libsql"}; OUT=${5:-results_large.jsonl}
+cd "$(dirname "$0")"; export OBX_LIB=${OBX_LIB:-obxc/lib/libobjectbox.so}; export BENCH_ROOT=${BENCH_ROOT:-data_large}
 log() { echo "$(date -u +%H:%M:%S) $*"; }
-run() { python3 messung_gross.py "$@" | sed "s/^{/{$TAG /" >> "$OUT" || log "ERROR in $*"; }
+run() { python3 measure_large.py "$@" | sed "s/^{/{$TAG /" >> "$OUT" || log "ERROR in $*"; }
 for E in $ENGINES; do
   for MODE in standard mallopt; do
     if [ $MODE = mallopt ]; then export BENCH_MALLOPT=1; else unset BENCH_MALLOPT; fi

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Summarizes ergebnisse.jsonl: median across the runs, smallest and largest run in parentheses."""
+"""Summarizes results.jsonl: median across the runs, smallest and largest run in parentheses."""
 import json, statistics as st, collections
-R = [json.loads(l) for l in open('ergebnisse.jsonl')]
+R = [json.loads(l) for l in open('results.jsonl')]
 E = ['obx', 'sqlite', 'turso', 'libsql']
 def get(e, phase, f, cache=None): return [f(r) for r in R if r['engine'] == e and r['phase'] == phase and (cache is None or r.get('cache') == cache)]
 def fmt(xs, nd=2):

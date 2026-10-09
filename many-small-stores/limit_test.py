@@ -3,14 +3,14 @@
 
 Linux (glibc) allows 1,024 thread-local keys per process (PTHREAD_KEYS_MAX).
 The test pre-allocates a number of such keys and counts how many stores can be opened afterwards.
-Prerequisite: first  python3 messung.py obx create 3000
+Prerequisite: first  python3 measure.py obx create 3000
 Watch memory: each open store takes about 2 MB.
 """
 import subprocess, sys
 CODE = '''
 import sys, ctypes, os
 sys.argv = ["x"]; os.environ["OBX_TUNE"] = "{tune}"
-import messung as M
+import measure as M
 libc = ctypes.CDLL("libc.so.6"); k = ctypes.c_uint()
 for i in range({preallocated}):
     assert libc.pthread_key_create(ctypes.byref(k), None) == 0

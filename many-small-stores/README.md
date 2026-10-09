@@ -1,6 +1,6 @@
 # Measurement: 100,000 small stores per engine, ObjectBox up to 500,000
 
-As of 2026-10-06 · internal until the results have been reviewed · measured in a cloud sandbox. Builds on the first measurement from 2026-10-05 (`2026_10_05_Erstmessung_Eine_DB_pro_Agent.md`, 10,000 stores) and confirms it.
+As of 2026-10-06 · internal until the results have been reviewed · measured in a cloud sandbox. Builds on the first measurement from 2026-10-05 (`2026_10_05_first_measurement_one_db_per_agent.md`, 10,000 stores) and confirms it.
 
 ## Result in three sentences
 
@@ -73,11 +73,11 @@ Creation scales linearly: 422 stores per second at 100,000 as at 500,000. Openin
 ## Reproduce
 
 ```
-./lauf_gross.sh 100000 10000 1000 "obx sqlite turso libsql" ergebnisse_gross.jsonl
-BENCH_ROOT=data_500k ./lauf_gross.sh 500000 10000 1000 "obx" ergebnisse_gross_500k.jsonl
-python3 auswertung_gross.py ergebnisse_gross.jsonl ergebnisse_gross_500k.jsonl
+./run_large.sh 100000 10000 1000 "obx sqlite turso libsql" results_large.jsonl
+BENCH_ROOT=data_500k ./run_large.sh 500000 10000 1000 "obx" results_large_500k.jsonl
+python3 analyze_large.py results_large.jsonl results_large_500k.jsonl
 ```
 
-Needs root (for `drop_caches`), `libobjectbox.so` 5.3.2 under `obxc/lib/`, Python 3.11 with `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`. Files in this folder: `messung.py` (engine classes), `messung_gross.py`, `lauf_gross.sh`, `auswertung_gross.py`, raw data `ergebnisse_gross.jsonl` and `ergebnisse_gross_500k.jsonl`, logs `lauf_gross.log` and `lauf_gross_500k.log`, `umgebung_gross.txt`.
+Needs root (for `drop_caches`), `libobjectbox.so` 5.3.2 under `obxc/lib/`, Python 3.11 with `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`. Files in this folder: `measure.py` (engine classes), `measure_large.py`, `run_large.sh`, `analyze_large.py`, raw data `results_large.jsonl` and `results_large_500k.jsonl`, logs `run_large.log` and `run_large_500k.log`, `environment_large.txt`.
 
 Run times: 100,000 per engine in both settings 46 minutes (16:36–17:22 UTC), ObjectBox 500,000 in both settings 43 minutes (17:28–18:11 UTC). No errors.
