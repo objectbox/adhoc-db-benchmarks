@@ -1,4 +1,6 @@
-# Measurement: 100,000 small stores per engine, ObjectBox up to 500,000
+# Adhoc DB Benchmarks: one database per agent
+
+Ad-hoc measurement, not an official benchmark: many small stores per engine – ObjectBox, SQLite, Turso Database, libSQL; 100,000 stores per engine, ObjectBox additionally 500,000.
 
 As of 2026-10-06 · internal until the results have been reviewed · measured in a cloud sandbox. Builds on the first measurement from 2026-10-05 (`2026_10_05_first_measurement_one_db_per_agent.md`, 10,000 stores) and confirms it.
 
@@ -78,6 +80,6 @@ BENCH_ROOT=data_500k ./run_large.sh 500000 10000 1000 "obx" results_large_500k.j
 python3 analyze_large.py results_large.jsonl results_large_500k.jsonl
 ```
 
-Needs root (for `drop_caches`), `libobjectbox.so` 5.3.2 under `obxc/lib/`, Python 3.11 with `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`. Files in this folder: `measure.py` (engine classes), `measure_large.py`, `run_large.sh`, `analyze_large.py`, raw data `results_large.jsonl` and `results_large_500k.jsonl`, logs `run_large.log` and `run_large_500k.log`, `environment_large.txt`.
+Needs root (for `drop_caches`), `libobjectbox.so` 5.3.2 under `obxc/lib/`, Python 3.11 with `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`, `flatbuffers 24.3.25`. Files in this repository: `measure.py` (engine classes), `measure_large.py`, `run_large.sh`, `analyze_large.py`, raw data `results_large.jsonl` and `results_large_500k.jsonl`, logs `run_large.log` and `run_large_500k.log`, `environment_large.txt`.
 
 Run times: 100,000 per engine in both settings 46 minutes (16:36–17:22 UTC), ObjectBox 500,000 in both settings 43 minutes (17:28–18:11 UTC). No errors.
