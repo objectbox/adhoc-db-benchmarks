@@ -1,0 +1,81 @@
+21:07:04 waiting for load < 1: 2.73 3.04 2.71
+21:08:04 waiting for load < 1: 1.98 2.78 2.64
+21:09:04 waiting for load < 1: 1.53 2.51 2.55
+21:10:04 waiting for load < 1: 1.76 2.39 2.51
+21:11:04 waiting for load < 1: 1.39 2.16 2.42
+21:12:04 waiting for load < 1: 1.43 2.00 2.35
+21:13:04 waiting for load < 1: 1.81 1.98 2.32
+21:14:04 load ok: 0.91 1.69 2.19
+21:14:04 obx standard create 100000
+21:42:38 obx standard open warm 1
+21:42:41 obx standard open warm 2
+21:42:45 obx standard open warm 3
+21:42:48 obx standard open cold: skipped (dropping the page cache needs root)
+21:42:48 obx standard hold 1000
+21:42:58 obx mallopt create 100000
+22:09:58 obx mallopt open warm 1
+22:10:01 obx mallopt open warm 2
+22:10:04 obx mallopt open warm 3
+22:10:08 obx mallopt open cold: skipped (dropping the page cache needs root)
+22:10:08 obx mallopt hold 1000
+22:10:08 obx_cached standard create 100000
+22:36:43 obx_cached standard open warm 1
+22:36:45 obx_cached standard open warm 2
+22:36:48 obx_cached standard open warm 3
+22:36:50 obx_cached standard open cold: skipped (dropping the page cache needs root)
+22:36:50 obx_cached standard hold 1000
+22:37:00 obx_cached mallopt create 100000
+23:03:36 obx_cached mallopt open warm 1
+23:03:38 obx_cached mallopt open warm 2
+23:03:41 obx_cached mallopt open warm 3
+23:03:43 obx_cached mallopt open cold: skipped (dropping the page cache needs root)
+23:03:43 obx_cached mallopt hold 1000
+23:03:44 obx_nosync standard create 100000
+23:30:05 obx_nosync standard open warm 1
+23:30:07 obx_nosync standard open warm 2
+23:30:08 obx_nosync standard open warm 3
+23:30:10 obx_nosync standard open cold: skipped (dropping the page cache needs root)
+23:30:10 obx_nosync standard hold 1000
+23:30:18 obx_nosync mallopt create 100000
+23:56:54 obx_nosync mallopt open warm 1
+23:56:55 obx_nosync mallopt open warm 2
+23:56:57 obx_nosync mallopt open warm 3
+23:56:58 obx_nosync mallopt open cold: skipped (dropping the page cache needs root)
+23:56:58 obx_nosync mallopt hold 1000
+23:56:59 sqlite standard create 100000
+00:37:37 sqlite standard open warm 1
+00:37:38 sqlite standard open warm 2
+00:37:38 sqlite standard open warm 3
+00:37:39 sqlite standard open cold: skipped (dropping the page cache needs root)
+00:37:39 sqlite standard hold 1000
+00:37:45 sqlite mallopt create 100000
+01:18:05 sqlite mallopt open warm 1
+01:18:06 sqlite mallopt open warm 2
+01:18:07 sqlite mallopt open warm 3
+01:18:08 sqlite mallopt open cold: skipped (dropping the page cache needs root)
+01:18:08 sqlite mallopt hold 1000
+01:18:08 turso standard create 100000
+02:21:23 turso standard open warm 1
+02:22:43 turso standard open warm 2
+02:23:58 turso standard open warm 3
+02:25:13 turso standard open cold: skipped (dropping the page cache needs root)
+02:25:13 turso standard hold 1000
+02:25:28 turso mallopt create 100000
+03:28:51 turso mallopt open warm 1
+03:30:04 turso mallopt open warm 2
+03:31:19 turso mallopt open warm 3
+03:32:44 turso mallopt open cold: skipped (dropping the page cache needs root)
+03:32:44 turso mallopt hold 1000
+03:32:53 libsql standard create 100000
+04:36:06 libsql standard open warm 1
+04:36:08 libsql standard open warm 2
+04:36:09 libsql standard open warm 3
+04:36:10 libsql standard open cold: skipped (dropping the page cache needs root)
+04:36:10 libsql standard hold 1000
+04:36:16 libsql mallopt create 100000
+05:39:18 libsql mallopt open warm 1
+05:39:20 libsql mallopt open warm 2
+05:39:21 libsql mallopt open warm 3
+05:39:22 libsql mallopt open cold: skipped (dropping the page cache needs root)
+05:39:22 libsql mallopt hold 1000
+05:39:22 done

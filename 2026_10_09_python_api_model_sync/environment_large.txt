@@ -1,0 +1,12 @@
+# Environment 2026-10-09T21:14:04Z
+Linux 6.8.0-146-generic
+model name	: AMD Ryzen 9 5950X 16-Core Processor
+32
+               total        used        free      shared  buff/cache   available
+Mem:           64213       18318        1622         724       44500       45894
+/dev/nvme1n1p1 ext4 1729094204 584887404 1056299832  36%
+Python 3.12.3
+{'objectbox': '5.0.0b1', 'objectbox-clib': '5.3.2', 'apsw': '3.53.4.0', 'pyturso': '0.8.1', 'libsql': '0.1.11', 'flatbuffers': '25.12.19', 'numpy': '2.5.3'}
+objectbox-python: 5cc8f48 Store: sync a model only once per process, add skip_model_sync
+adhoc-db-benchmarks: d45d293 run_large.sh: skip the cold open runs if the page cache cannot be dropped (no root)
+load average at start: 0.91 1.69 2.19 2/3164 2191136
