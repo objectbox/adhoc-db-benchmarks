@@ -4,6 +4,8 @@ Ad-hoc measurement, not an official benchmark: many small stores per engine – 
 
 As of 2026-10-06 · internal until the results have been reviewed · measured in a cloud sandbox. Builds on the first measurement from 2026-10-05 (`2026_10_05_first_measurement_one_db_per_agent.md`, 10,000 stores) and confirms it.
 
+See also `2026_10_09_python_api_model_sync/README.md` (2026-10-10): ObjectBox via the Python API with the model synced on every open, once, or not at all, on a workstation.
+
 ## Result in three sentences
 
 Creating an ObjectBox database and writing ten objects takes a little over 2 ms, an idle store costs 24 KB of disk, and open, query, close stays below one millisecond at the median – even with 500,000 stores. Against Turso Database, ObjectBox is ahead on opening and on memory. Against SQLite, ObjectBox is ahead on memory (with one allocator line), behind on space and on opening.

@@ -55,7 +55,7 @@ The tables are printed by `python3 tables.py` from `results_large.jsonl`.
 4. Not comparable in absolute numbers to the main write-up: different machine (AMD Ryzen 9 5950X, 64 GB vs. a cloud VM with 8 GB), Python 3.12 instead of 3.11, and the Python API instead of the C API via ctypes. The ObjectBox variants among each other, and the engines on this machine, are comparable.
 5. objectbox 5.0.0b1 is unreleased (wheels built locally from objectbox-python `dev`, 5cc8f48).
 6. `skip_model_sync=True` trusts the schema stored in the database: if the code's entity classes differ from it (e.g. an added property in the code but not in the store), this is not detected on open. Using it is only safe when all stores were created with the same model.
-7. The ~2 MB per open store when a model is passed (without the allocator line) is very likely allocations made while checking the model against the stored schema; this was not traced inside the C library. Why it goes away with the allocator line: see the main write-up.
+7. The ~2 MB per open store when a model is passed (without the allocator line) is very likely the two LMDB lists of 3 MiB in total (caveat 7 of `../README.md`) being touched while the model is checked against the stored schema (probably in a write transaction); without a model, a reading store never touches them. This was not traced inside the C library.
 8. One run per setting and variant (three open runs each); no repetition across days.
 
 ## Reproduce

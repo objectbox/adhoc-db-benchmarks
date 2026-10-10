@@ -4,7 +4,7 @@ This file provides guidance to coding agents when working with code in this repo
 
 ## What this repo is
 
-Ad-hoc database measurement (not an official benchmark), all in the repository root: code, raw data (`.jsonl`), run logs, and the write-up `README.md`.
+Ad-hoc database measurement (not an official benchmark), code in the repository root; the main write-up `README.md` with its raw data (`.jsonl`) and run logs in the root, later measurements in dated sub-folders (`YYYY_MM_DD_<title>/` with their own `README.md`, raw data, log and scripts).
 
 Everything is in English: write-ups, identifiers, CLI arguments, JSON keys, log lines. Use English number formatting in write-ups (`2.24 ms`, `100,000 stores`).
 
@@ -14,7 +14,7 @@ Measures the fixed cost of many tiny databases (one per agent) for ObjectBox, SQ
 
 ### Requirements
 
-- Root (for `echo 3 > /proc/sys/vm/drop_caches` in cold-cache runs)
+- Root (for `echo 3 > /proc/sys/vm/drop_caches` in cold-cache runs; without it, `run_large.sh` skips the cold runs and logs that)
 - A Python venv in `.venv/` (not tracked in git; the scripts use it if present) with `objectbox 5.0.0b1` (wheels built from objectbox-python, branch `dev`; brings `objectbox-clib 5.3.2`, the ObjectBox C library), `apsw 3.53.4.0`, `pyturso 0.8.1`, `libsql 0.1.11`:
   `python3 -m venv .venv && .venv/bin/pip install objectbox==5.0.0b1 --find-links <objectbox-python>/dist apsw==3.53.4.0 pyturso==0.8.1 libsql==0.1.11`
 
@@ -48,4 +48,4 @@ Environment variables: `BENCH_ROOT` (data dir; `data` for `measure.py`, `data_la
 
 ### Write-up conventions
 
-`README.md` follows a fixed shape: status line (date, internal/external, where it was measured), "Result in three sentences", result tables, "What was measured", numbered "Caveats", "Reproduce" (exact reproduce commands, versions, runtimes). Older write-ups are kept as dated files (`YYYY_MM_DD_<title>.md`). Results are internal until they have been reviewed; numbers in write-ups must be traceable to the committed raw `.jsonl` data and logs.
+`README.md` follows a fixed shape: status line (date, internal/external, where it was measured), "Result in three sentences", result tables, "What was measured", numbered "Caveats", "Reproduce" (exact reproduce commands, versions, runtimes). Older write-ups are kept as dated files (`YYYY_MM_DD_<title>.md`); separate measurements go into dated sub-folders, linked from the main `README.md`. Results are internal until they have been reviewed; numbers in write-ups must be traceable to the committed raw `.jsonl` data and logs.
