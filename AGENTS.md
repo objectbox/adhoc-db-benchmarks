@@ -4,7 +4,7 @@ This file provides guidance to coding agents when working with code in this repo
 
 ## What this repo is
 
-Ad-hoc database measurement (not an official benchmark), code in the repository root; the main write-up `README.md` with its raw data (`.jsonl`) and run logs in the root, later measurements in dated sub-folders (`YYYY_MM_DD_<title>/` with their own `README.md`, raw data, log and scripts).
+Ad-hoc database measurement (not an official benchmark), code in the repository root; each measurement in a dated sub-folder (`YYYY_MM_DD_<title>/`) with its write-up `README.md`, raw data (`.jsonl`), run logs and any measurement-specific scripts. The root `README.md` shows the main results (key rows of the latest Python API measurement, copied from its write-up; the C API measurements are side experiments, only linked) and lists the measurements.
 
 Everything is in English: write-ups, identifiers, CLI arguments, JSON keys, log lines. Use English number formatting in write-ups (`2.24 ms`, `100,000 stores`).
 
@@ -22,16 +22,17 @@ Measures the fixed cost of many tiny databases (one per agent) for ObjectBox, SQ
 
 ```bash
 # Full large run: N stores per engine, M random stores per open-run, K held open simultaneously
-./run_large.sh 100000 10000 1000 "obx sqlite turso libsql" results_large.jsonl
-BENCH_ROOT=data_500k ./run_large.sh 500000 10000 1000 "obx" results_large_500k.jsonl
-python3 analyze_large.py results_large.jsonl results_large_500k.jsonl
+# (run from the repository root; write the output into the measurement's sub-folder)
+./run_large.sh 100000 10000 1000 "obx sqlite turso libsql" <folder>/results_large.jsonl
+BENCH_ROOT=data_500k ./run_large.sh 500000 10000 1000 "obx" <folder>/results_large_500k.jsonl
+python3 analyze_large.py <folder>/results_large.jsonl <folder>/results_large_500k.jsonl
 
 # Single phase for one engine (each phase prints one JSON line)
 python3 measure_large.py <obx|sqlite|turso|libsql> create <N>
 python3 measure_large.py <engine> open   <N> <M> [seed]
 python3 measure_large.py <engine> hold   <N> <K> [seed]
 
-# Older, smaller first measurement (2026-10-05): ./run.sh <run#> [N] [M] [K], evaluated by analyze.py
+# Older, smaller first measurement (2026-10-05): ./run.sh <run#> [N] [M] [K], writes results.jsonl, evaluated by analyze.py [results.jsonl]
 ```
 
 Environment variables: `BENCH_ROOT` (data dir; `data` for `measure.py`, `data_large` for `measure_large.py`), `BENCH_MALLOPT=1` (sets `mallopt(M_MMAP_THRESHOLD, 131072)` before anything else is loaded), `PYTHON` (interpreter for the shell scripts; default `.venv/bin/python`), `OBX_TUNE` (substring flags `readers`, `maxkb`, `notls` for ObjectBox store options).
@@ -48,4 +49,4 @@ Environment variables: `BENCH_ROOT` (data dir; `data` for `measure.py`, `data_la
 
 ### Write-up conventions
 
-`README.md` follows a fixed shape: status line (date, internal/external, where it was measured), "Result in three sentences", result tables, "What was measured", numbered "Caveats", "Reproduce" (exact reproduce commands, versions, runtimes). Older write-ups are kept as dated files (`YYYY_MM_DD_<title>.md`); separate measurements go into dated sub-folders, linked from the main `README.md`. Results are internal until they have been reviewed; numbers in write-ups must be traceable to the committed raw `.jsonl` data and logs.
+A measurement's `README.md` follows a fixed shape: status line (date, internal/external, where it was measured), "Result in three sentences", result tables, "What was measured", numbered "Caveats", "Reproduce" (exact reproduce commands, versions, runtimes). Each measurement gets a new dated sub-folder, listed in the root `README.md` (update its main results too); earlier measurements stay unchanged (their code state is a git commit, named in their Reproduce section). Results are internal until they have been reviewed; numbers in write-ups must be traceable to the committed raw `.jsonl` data and logs.
