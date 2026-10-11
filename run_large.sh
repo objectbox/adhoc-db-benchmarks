@@ -6,6 +6,7 @@
 # Per setting: create, 3x open warm, 3x open cold (page cache dropped before), hold.
 N=${1:-100000}; M=${2:-10000}; K=${3:-1000}; ENGINES=${4:-"obx sqlite turso libsql"}; OUT=${5:-results_large.jsonl}
 cd "$(dirname "$0")"; export BENCH_ROOT=${BENCH_ROOT:-data_large}
+set -o pipefail  # run(): report a failing measure_large.py, not only a failing sed
 PYTHON=${PYTHON:-$( [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3 )}
 log() { echo "$(date -u +%H:%M:%S) $*"; }
 run() { "$PYTHON" measure_large.py "$@" | sed "s/^{/{$TAG /" >> "$OUT" || log "ERROR in $*"; }
