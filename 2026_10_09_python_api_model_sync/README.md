@@ -1,6 +1,6 @@
 # ObjectBox via the Python API: syncing the model once, or not at all
 
-As of 2026-10-10 · internal until the results have been reviewed · measured on a desktop workstation (not the cloud sandbox of the main write-up). Same measurement as `../README.md` (100,000 stores per engine), but ObjectBox is now driven through the regular objectbox-python API in three variants; warm page cache only.
+As of 2026-10-10 · internal until the results have been reviewed · measured on a desktop workstation (not the cloud sandbox of the 2026-10-06 write-up). Same measurement as `../2026_10_06_c_api_100k_500k/README.md` (100,000 stores per engine), but ObjectBox is now driven through the regular objectbox-python API in three variants; warm page cache only.
 
 ## Result in three sentences
 
@@ -40,22 +40,22 @@ The tables are printed by `python3 tables.py` from `results_large.jsonl`.
 
 ## What was measured
 
-- Same phases as the main write-up (`../README.md`): create 100,000 stores (one directory each, schema `Note(id, text, ts)`, ten entries in one transaction), then three runs of open, count query, close for 10,000 random stores, then 1,000 random stores held open at the same time (RSS growth divided by 1,000). Each phase in a fresh process.
+- Same phases as the 2026-10-06 write-up (`../2026_10_06_c_api_100k_500k/README.md`): create 100,000 stores (one directory each, schema `Note(id, text, ts)`, ten entries in one transaction), then three runs of open, count query, close for 10,000 random stores, then 1,000 random stores held open at the same time (RSS growth divided by 1,000). Each phase in a fresh process.
 - ObjectBox through the Python API (`Store`, `Box`, an `@Entity` class `Note`, `measure.py`), objectbox 5.0.0b1 from objectbox-python `dev` (5cc8f48), which syncs a model with its JSON file only once per process and adds `skip_model_sync`. The three variants:
   - **sync every open** (`obx`): a new `Model` per store, so the model JSON file is read, matched and rewritten on every open. This is what an application gets when it builds the model per store.
   - **cached model** (`obx_cached`): one `Model` for all stores; it is synced with the JSON file once per process. The model is still passed to the C library, which checks it against the schema stored in each database.
   - **skip model sync** (`obx_nosync`): like the cached model, plus `skip_model_sync=True`: an existing store is opened without passing a model, i.e. with the schema stored in the database. New stores are still created with the model.
-- SQLite (apsw), Turso Database and libSQL unchanged from the main write-up.
+- SQLite (apsw), Turso Database and libSQL unchanged from the 2026-10-06 write-up.
 
 ## Caveats
 
 1. Warm page cache only. Cold runs need root for `drop_caches`, which was not available; `run_large.sh` skipped them (see the log).
 2. A workstation with desktop applications running, not an idle machine. The run started once the 1-minute load average was below 1 (0.91, see `environment_large.txt`); it was not controlled during the 8.5 hours.
 3. Creating stores is dominated by the disk's sync latency (ext4 on NVMe): ~14 ms per ObjectBox store here vs. ~2.2 ms in the cloud sandbox. The same likely explains Turso Database's 6.3 ms close (1.2 ms open, query, close in the sandbox). Create numbers say more about the disk than about the engines.
-4. Not comparable in absolute numbers to the main write-up: different machine (AMD Ryzen 9 5950X, 64 GB vs. a cloud VM with 8 GB), Python 3.12 instead of 3.11, and the Python API instead of the C API via ctypes. The ObjectBox variants among each other, and the engines on this machine, are comparable.
+4. Not comparable in absolute numbers to the 2026-10-06 write-up: different machine (AMD Ryzen 9 5950X, 64 GB vs. a cloud VM with 8 GB), Python 3.12 instead of 3.11, and the Python API instead of the C API via ctypes. The ObjectBox variants among each other, and the engines on this machine, are comparable.
 5. objectbox 5.0.0b1 is unreleased (wheels built locally from objectbox-python `dev`, 5cc8f48).
 6. `skip_model_sync=True` trusts the schema stored in the database: if the code's entity classes differ from it (e.g. an added property in the code but not in the store), this is not detected on open. Using it is only safe when all stores were created with the same model.
-7. The ~2 MB per open store when a model is passed (without the allocator line) is very likely the two LMDB lists of 3 MiB in total (caveat 7 of `../README.md`) being touched while the model is checked against the stored schema (probably in a write transaction); without a model, a reading store never touches them. This was not traced inside the C library.
+7. The ~2 MB per open store when a model is passed (without the allocator line) is very likely the two LMDB lists of 3 MiB in total (caveat 7 of `../2026_10_06_c_api_100k_500k/README.md`) being touched while the model is checked against the stored schema (probably in a write transaction); without a model, a reading store never touches them. This was not traced inside the C library.
 8. One run per setting and variant (three open runs each); no repetition across days.
 
 ## Reproduce

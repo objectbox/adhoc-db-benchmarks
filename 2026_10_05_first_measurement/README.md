@@ -86,8 +86,10 @@ For Turso, the GitHub page shows 0.7.0 as "Latest", but PyPI shows 0.8.1. The Py
 
 Prerequisites: Linux, Python 3, `pip install apsw pyturso libsql flatbuffers`, plus `objectbox-linux-x64.tar.gz` (5.3.2) extracted to `obxc/`.
 
+Run from the repository root. These numbers were measured with ObjectBox driven through the C API (ctypes); to reproduce them, check out commit `79a2eeb`. `run.sh` writes `results.jsonl` in the root; the raw data of this measurement is in this folder.
+
 - `./run.sh <run number>` – one complete run across all four engines (as root for the run with dropped file cache).
-- `python3 analyze.py` – summarizes `results.jsonl`.
+- `python3 analyze.py 2026_10_05_first_measurement/results.jsonl` – summarizes the results.
 - `python3 limit_test.py` – the test for the limit at 1,022.
 - `OBX_TUNE=readers,maxkb,notls python3 measure.py obx hold 200` – the three options.
 - `python3 ram_check.py 1000` – memory step by step, by memory region and from the allocator's point of view. Prefix with `MALLOC_MMAP_THRESHOLD_=131072` for the allocator setting.
