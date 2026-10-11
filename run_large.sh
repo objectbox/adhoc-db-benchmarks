@@ -6,6 +6,8 @@
 # Per setting: create, 3x open warm, 3x open cold (page cache dropped before), hold.
 # BENCH_WORKLOAD=small (default; ten objects with a short text per store) or large (1,000 objects with a
 # 300-character text), written in one transaction; each workload has its own data directory.
+# BENCH_MAX_LOAD=1: before each phase, wait until the 1-minute load average is below this value.
+# The 1-minute load average at the start of each phase is recorded as "load1".
 N=${1:-100000}; M=${2:-10000}; K=${3:-1000}; ENGINES=${4:-"obx sqlite turso libsql"}; OUT=${5:-results_large.jsonl}
 cd "$(dirname "$0")"; export BENCH_WORKLOAD=${BENCH_WORKLOAD:-small}
 case $BENCH_WORKLOAD in small|large) ;; *) echo "unknown BENCH_WORKLOAD $BENCH_WORKLOAD (small|large)" >&2; exit 1;; esac
@@ -13,7 +15,16 @@ export BENCH_ROOT=${BENCH_ROOT:-$( [ $BENCH_WORKLOAD = small ] && echo data_larg
 set -o pipefail  # run(): report a failing measure_large.py, not only a failing sed
 PYTHON=${PYTHON:-$( [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3 )}
 log() { echo "$(date -u +%H:%M:%S) $*"; }
-run() { "$PYTHON" measure_large.py "$@" | sed "s/^{/{$TAG /" >> "$OUT" || log "ERROR in $*"; }
+wait_load() {
+  [ -z "$BENCH_MAX_LOAD" ] && return
+  until awk -v max="$BENCH_MAX_LOAD" '{exit !($1 < max)}' /proc/loadavg; do
+    log "waiting for load < $BENCH_MAX_LOAD: $(cut -d' ' -f1-3 /proc/loadavg)"; sleep 30
+  done
+}
+run() {
+  wait_load; local load1; load1=$(cut -d' ' -f1 /proc/loadavg)
+  "$PYTHON" measure_large.py "$@" | sed "s/^{/{$TAG \"load1\": $load1, /" >> "$OUT" || log "ERROR in $*"
+}
 for E in $ENGINES; do
   for MODE in standard mallopt; do
     if [ $MODE = mallopt ]; then export BENCH_MALLOPT=1; else unset BENCH_MALLOPT; fi
