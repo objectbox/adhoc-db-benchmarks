@@ -1,0 +1,50 @@
+# 2026-10-11T18:56:11Z, load average 0.48 0.58 0.55; obx_cached, BENCH_WORKLOAD=large, 1,000 stores
+## On disk (BENCH_ROOT=data_profile, ext4 on NVMe)
+makedirs+open                    median  10.681 ms  mean   9.517 ms   30.4 %
+build objects                    median   0.938 ms  mean   0.969 ms    2.7 %
+ids_for_put (C)                  median   0.003 ms  mean   0.003 ms    0.0 %
+FlatBuffers marshalling (Python) median  15.029 ms  mean  15.131 ms   42.8 %
+put_many (C)                     median   9.311 ms  mean   8.787 ms   26.5 %
+close                            median   0.040 ms  mean   0.044 ms    0.1 %
+total                            median  35.152 ms  mean  34.452 ms  100.0 %
+
+## On tmpfs (BENCH_ROOT=/dev/shm/obx_profile; no real disk sync)
+makedirs+open                    median   0.274 ms  mean   0.324 ms    1.7 %
+build objects                    median   0.750 ms  mean   0.808 ms    4.6 %
+ids_for_put (C)                  median   0.003 ms  mean   0.003 ms    0.0 %
+FlatBuffers marshalling (Python) median  14.837 ms  mean  14.948 ms   91.4 %
+put_many (C)                     median   0.281 ms  mean   0.298 ms    1.7 %
+close                            median   0.030 ms  mean   0.035 ms    0.2 %
+total                            median  16.225 ms  mean  16.416 ms  100.0 %
+
+## cProfile on tmpfs, 100 stores (cProfile inflates the times; only the proportions count)
+         18511809 function calls in 5.228 seconds
+
+   Ordered by: internal time
+   List reduced from 87 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  1200000    0.542    0.000    0.830    0.000 flatbuffers/builder.py:365(Prep)
+   100000    0.475    0.000    4.631    0.000 objectbox/model/entity.py:153(_marshal)
+   100000    0.443    0.000    1.829    0.000 flatbuffers/builder.py:208(WriteVtable)
+   800000    0.317    0.000    0.699    0.000 flatbuffers/builder.py:815(Place)
+      100    0.264    0.003    5.013    0.050 objectbox/box.py:76(_put_many)
+   700000    0.255    0.000    1.310    0.000 flatbuffers/builder.py:642(Prepend)
+  1300000    0.242    0.000    0.438    0.000 flatbuffers/encode.py:43(Write)
+  3201004    0.218    0.000    0.218    0.000 {built-in method builtins.len}
+  1400000    0.208    0.000    0.294    0.000 flatbuffers/builder.py:353(Offset)
+  1200000    0.208    0.000    0.208    0.000 flatbuffers/builder.py:357(Pad)
+  1300000    0.198    0.000    0.198    0.000 flatbuffers/number_types.py:147(enforce_number)
+  1300000    0.196    0.000    0.196    0.000 {method 'pack_into' of '_struct.Struct' objects}
+   100000    0.166    0.000    0.600    0.000 flatbuffers/builder.py:477(CreateString)
+   200000    0.146    0.000    0.521    0.000 flatbuffers/builder.py:411(PrependUOffsetTRelative)
+   300000    0.126    0.000    0.277    0.000 flatbuffers/builder.py:846(PlaceUOffsetT)
+
+
+makedirs+open                    median   0.388 ms  mean   0.447 ms    0.7 %
+build objects                    median   1.541 ms  mean   1.626 ms    3.0 %
+ids_for_put (C)                  median   0.004 ms  mean   0.004 ms    0.0 %
+FlatBuffers marshalling (Python) median  49.575 ms  mean  49.838 ms   95.4 %
+put_many (C)                     median   0.299 ms  mean   0.319 ms    0.6 %
+close                            median   0.037 ms  mean   0.046 ms    0.1 %
+total                            median  51.955 ms  mean  52.279 ms  100.0 %

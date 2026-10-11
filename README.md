@@ -26,9 +26,10 @@ Creation on this machine is dominated by the disk's sync latency. With `mallopt(
 | Memory per open store, resident | 2,538 KB | 2,534 KB | 491 KB | 409 KB | 2,470 KB | 421 KB |
 | same, anonymous (process' own memory) | 2,065 KB | 2,062 KB | 19 KB | 407 KB | 2,466 KB | 418 KB |
 | Create, write 1,000 objects, close (median) | 30.72 ms | 30.73 ms | 29.85 ms | 26.59 ms | 40.80 ms | 42.80 ms |
+| same, estimated without the Python FlatBuffers marshalling | ~15.7 ms | ~15.7 ms | ~14.8 ms | – | – | – |
 | Space per store, files | 472 KB | 472 KB | 472 KB | 316 KB | 316 KB | 316 KB |
 
-ObjectBox's resident memory is mostly its data file mapped from the OS page cache; the SQL engines keep their pages in their own heap.
+ObjectBox's resident memory is mostly its data file mapped from the OS page cache; the SQL engines keep their pages in their own heap. About half of ObjectBox's create time (~15 ms per store) is the FlatBuffers marshalling of the 1,000 notes in Python; this is only the case with ObjectBox Python – other ObjectBox languages use generated code and efficient buffers, where marshalling is a much smaller fraction.
 
 Earlier measurements drove ObjectBox through its C API directly (ctypes): a side experiment, not how applications use ObjectBox from Python. Their numbers are only in the [2026-10-05](2026_10_05_first_measurement/README.md) and [2026-10-06](2026_10_06_c_api_100k_500k/README.md) write-ups and are not comparable to the results above (different machine, C API instead of the Python API).
 
