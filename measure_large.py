@@ -3,12 +3,13 @@
 
 Usage:  python3 measure_large.py <engine> <phase> <N> [M] [seed]
   engine: obx | obx_cached | obx_nosync | sqlite | turso | libsql
-  phase:  create  - create N new stores, write ten small objects each, close
+  phase:  create  - create N new stores, write the workload's objects in one transaction, close
           open    - M random ones of the N stores: open, one query, close
           hold    - keep M stores open at the same time: memory, file descriptors
 Environment:
   BENCH_ROOT     data directory (default: data_large)
   BENCH_MALLOPT  =1 sets mallopt(M_MMAP_THRESHOLD, 131072) in the process; otherwise defaults
+  BENCH_WORKLOAD small (default): ten objects with a short text per store; large: 1,000 objects with a 300-character text
 
 The engine classes (schema, writing, query) come unchanged from measure.py.
 One process per invocation, so memory values do not depend on previous phases.
@@ -22,7 +23,7 @@ if TUNED:
 
 os.environ.setdefault('BENCH_ROOT', 'data_large')
 import measure as m            # reads BENCH_ROOT on import
-from measure import ENGINES, ROWS, path, mem, status, T
+from measure import ENGINES, ROWS, WORKLOAD, path, mem, status, T
 
 def ms(ns): return ns / 1e6
 def stat(xs):
@@ -83,6 +84,7 @@ def phase_hold(e, n, k, seed):
 if __name__ == '__main__':
     e = ENGINES[sys.argv[1]](); phase = sys.argv[2]; n = int(sys.argv[3])
     mm = int(sys.argv[4]) if len(sys.argv) > 4 else 0; seed = int(sys.argv[5]) if len(sys.argv) > 5 else 1
-    r = {'engine': e.name, 'version': e.version, 'phase': phase, 'setting': 'mallopt' if TUNED else 'standard'}
+    r = {'engine': e.name, 'version': e.version, 'phase': phase, 'setting': 'mallopt' if TUNED else 'standard',
+         'workload': WORKLOAD, 'objects_per_store': ROWS}
     r.update({'create': phase_create, 'open': phase_open, 'hold': phase_hold}[phase](e, n, mm, seed))
     print(json.dumps(r, ensure_ascii=False))

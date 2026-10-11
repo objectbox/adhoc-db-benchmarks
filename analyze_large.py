@@ -4,11 +4,12 @@ import json, statistics, sys
 from collections import defaultdict
 rows = [json.loads(l) for f in sys.argv[1:] for l in open(f)]
 E = ['obx', 'obx_cached', 'obx_nosync', 'sqlite', 'turso', 'libsql']; MODES = ['standard', 'mallopt']
+W = lambda r: r.get('workload', 'small')  # results before the workload switch: small
 def pick(e, mode, phase, cache=None, n=None):
-    return [r for r in rows if r['engine'] == e and r['setting'] == mode and r['phase'] == phase and (cache is None or r.get('cache') == cache) and (n is None or r['n'] == n)]
+    return [r for r in rows if W(r) == w and r['engine'] == e and r['setting'] == mode and r['phase'] == phase and (cache is None or r.get('cache') == cache) and (n is None or r['n'] == n)]
 def med(xs): return statistics.median(xs)
-for n in sorted({r['n'] for r in rows}):
-    print(f'\n===== N = {n:,} stores per engine =====')
+for w, n in sorted({(W(r), r['n']) for r in rows}, key=lambda x: (x[0] != 'small', x)):
+    print(f'\n===== N = {n:,} stores per engine, workload {w} =====')
     for e in E:
         for mode in MODES:
             a = pick(e, mode, 'create', n=n)

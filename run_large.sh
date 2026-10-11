@@ -4,8 +4,12 @@
 #   K = stores open at the same time (1000). Needs root for the cold run (drop_caches); skipped otherwise.
 # Per engine two settings: standard, and mallopt (one allocator line in the benchmark program).
 # Per setting: create, 3x open warm, 3x open cold (page cache dropped before), hold.
+# BENCH_WORKLOAD=small (default; ten objects with a short text per store) or large (1,000 objects with a
+# 300-character text), written in one transaction; each workload has its own data directory.
 N=${1:-100000}; M=${2:-10000}; K=${3:-1000}; ENGINES=${4:-"obx sqlite turso libsql"}; OUT=${5:-results_large.jsonl}
-cd "$(dirname "$0")"; export BENCH_ROOT=${BENCH_ROOT:-data_large}
+cd "$(dirname "$0")"; export BENCH_WORKLOAD=${BENCH_WORKLOAD:-small}
+case $BENCH_WORKLOAD in small|large) ;; *) echo "unknown BENCH_WORKLOAD $BENCH_WORKLOAD (small|large)" >&2; exit 1;; esac
+export BENCH_ROOT=${BENCH_ROOT:-$( [ $BENCH_WORKLOAD = small ] && echo data_large || echo data_large_$BENCH_WORKLOAD )}
 set -o pipefail  # run(): report a failing measure_large.py, not only a failing sed
 PYTHON=${PYTHON:-$( [ -x .venv/bin/python ] && echo .venv/bin/python || echo python3 )}
 log() { echo "$(date -u +%H:%M:%S) $*"; }
@@ -14,7 +18,7 @@ for E in $ENGINES; do
   for MODE in standard mallopt; do
     if [ $MODE = mallopt ]; then export BENCH_MALLOPT=1; else unset BENCH_MALLOPT; fi
     rm -rf "$BENCH_ROOT/$E"; sync
-    log "$E $MODE create $N"; TAG="\"run\": 1,"; run $E create $N
+    log "$E $MODE create $N ($BENCH_WORKLOAD)"; TAG="\"run\": 1,"; run $E create $N
     for L in 1 2 3; do
       log "$E $MODE open warm $L"; TAG="\"run\": $L, \"cache\": \"warm\","; run $E open $N $M $L
     done

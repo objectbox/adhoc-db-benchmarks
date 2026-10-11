@@ -27,6 +27,9 @@ Measures the fixed cost of many tiny databases (one per agent) for ObjectBox, SQ
 BENCH_ROOT=data_500k ./run_large.sh 500000 10000 1000 "obx" <folder>/results_large_500k.jsonl
 python3 analyze_large.py <folder>/results_large.jsonl <folder>/results_large_500k.jsonl
 
+# Large workload: 1,000 objects of 300 characters per store
+BENCH_WORKLOAD=large ./run_large.sh 100000 10000 1000 "obx_nosync sqlite" <folder>/results_large.jsonl
+
 # Single phase for one engine (each phase prints one JSON line)
 python3 measure_large.py <obx|sqlite|turso|libsql> create <N>
 python3 measure_large.py <engine> open   <N> <M> [seed]
@@ -35,11 +38,11 @@ python3 measure_large.py <engine> hold   <N> <K> [seed]
 # Older, smaller first measurement (2026-10-05): ./run.sh <run#> [N] [M] [K], writes results.jsonl, evaluated by analyze.py [results.jsonl]
 ```
 
-Environment variables: `BENCH_ROOT` (data dir; `data` for `measure.py`, `data_large` for `measure_large.py`), `BENCH_MALLOPT=1` (sets `mallopt(M_MMAP_THRESHOLD, 131072)` before anything else is loaded), `PYTHON` (interpreter for the shell scripts; default `.venv/bin/python`), `OBX_TUNE` (substring flags `readers`, `maxkb`, `notls` for ObjectBox store options).
+Environment variables: `BENCH_WORKLOAD` (what each store gets, written in one transaction: `small`, the default, ten objects with a short text; `large`, 1,000 objects with a 300-character text; recorded as `workload` in the JSON output), `BENCH_ROOT` (data dir; `data` for `measure.py`, `data_large` for `measure_large.py`; `run_large.sh` uses `data_large_large` for the large workload), `BENCH_MALLOPT=1` (sets `mallopt(M_MMAP_THRESHOLD, 131072)` before anything else is loaded), `PYTHON` (interpreter for the shell scripts; default `.venv/bin/python`), `OBX_TUNE` (substring flags `readers`, `maxkb`, `notls` for ObjectBox store options).
 
 ### Architecture
 
-- `measure.py` is the core: one class per engine (`Obx`, `Sqlite`, `Turso`, `Libsql`; ObjectBox variants: `obx` syncs the model on every open, `obx_cached` (`ObxCached`) reuses one synced model, `obx_nosync` (`ObxNoSync`) additionally opens existing stores with `skip_model_sync=True`, i.e. with the schema stored in the database) with the same interface `create/open/write/read/close`, registered in `ENGINES`, plus helpers (`path`, `mem`, `status`). ObjectBox is driven through its **Python API** (`objectbox` package: `Store`, `Box`, an `@Entity` class `Note`); the model IDs are kept in the committed `objectbox-model.json` (do not delete it: stores created with other IDs cannot be opened). Until 2026-10-06 the C API was used via ctypes (see the git history and the older write-ups). The SQL engines share `DDL`/`INS`/`CNT`. Schema everywhere: one table/type `Note(id, text, ts)`, 10 rows written in one transaction.
+- `measure.py` is the core: one class per engine (`Obx`, `Sqlite`, `Turso`, `Libsql`; ObjectBox variants: `obx` syncs the model on every open, `obx_cached` (`ObxCached`) reuses one synced model, `obx_nosync` (`ObxNoSync`) additionally opens existing stores with `skip_model_sync=True`, i.e. with the schema stored in the database) with the same interface `create/open/write/read/close`, registered in `ENGINES`, plus helpers (`path`, `mem`, `status`). ObjectBox is driven through its **Python API** (`objectbox` package: `Store`, `Box`, an `@Entity` class `Note`); the model IDs are kept in the committed `objectbox-model.json` (do not delete it: stores created with other IDs cannot be opened). Until 2026-10-06 the C API was used via ctypes (see the git history and the older write-ups). The SQL engines share `DDL`/`INS`/`CNT`. Schema everywhere: one table/type `Note(id, text, ts)`; the rows per store come from `rows(i)` (workload from `BENCH_WORKLOAD`), written in one transaction.
 - `measure_large.py` imports the engine classes unchanged from `measure.py` and adds its own phases (random sampling with seeds, p99, directory-inclusive disk usage). `BENCH_ROOT` must be set before `import measure`, since `ROOT` is read at import time.
 - Store layout on disk: `<ROOT>/<engine>/<i // 1000>/<i>/`.
 - Each phase runs in a **fresh process** so memory numbers are not polluted by earlier phases; the shell scripts orchestrate this and prefix each JSON line with run metadata (`run`, `cache`) via `sed`, appending to a `.jsonl` file.

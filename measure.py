@@ -2,18 +2,31 @@
 """One database per agent - measuring ObjectBox, SQLite, Turso, libSQL.
 
 Usage (each phase in a fresh process so memory is clean):
-  python3 measure.py <engine> create <N>      creates N databases with 10 objects each
+  python3 measure.py <engine> create <N>      creates N databases with ROWS objects each (see BENCH_WORKLOAD)
   python3 measure.py <engine> open   <M>      opens M existing ones one after another: open, read, close
   python3 measure.py <engine> hold   <K>      keeps K open at the same time and measures memory
   engine: obx | obx_cached | obx_nosync | sqlite | turso | libsql
 Output: one JSON line.
+BENCH_WORKLOAD selects what is written per store, in one transaction: small (default; 10 objects with a short text)
+or large (1,000 objects with a 300-character text).
 
 ObjectBox is accessed through its Python API (package objectbox 5.0.0b1 with objectbox-clib 5.3.2);
 the model IDs are kept in objectbox-model.json next to this file.
 """
 import json, os, statistics, sys, time
 
-ROWS = 10
+WORKLOADS = {'small': (10, None), 'large': (1000, 300)}  # name: (objects per store, text length; None: short text)
+WORKLOAD = os.environ.get('BENCH_WORKLOAD', 'small')
+ROWS, TEXT_LEN = WORKLOADS[WORKLOAD]
+FILLER = ('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna '
+          'aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. '
+          'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint '
+          'occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.')
+def rows(i):
+    """The (text, ts) values written to store i."""
+    if TEXT_LEN is None: return [(f'note {j} of agent {i}', j) for j in range(ROWS)]
+    return [((f'note {j} of agent {i}: ' + FILLER)[:TEXT_LEN], j) for j in range(ROWS)]
+assert TEXT_LEN is None or len(rows(99999)[-1][0]) == TEXT_LEN
 ROOT = os.environ.get('BENCH_ROOT', 'data')
 
 # ---------------------------------------------------------------- ObjectBox (Python API)
@@ -45,7 +58,7 @@ class Obx:
     def create(self, path): os.makedirs(path); return self._open(path)
     def open(self, path): return self._open(path)
     def write(self, s, i):
-        s.box(self.Note).put([self.Note(text=f'note {j} of agent {i}', ts=j) for j in range(ROWS)])  # one transaction
+        s.box(self.Note).put([self.Note(text=text, ts=ts) for text, ts in rows(i)])  # one transaction
     def read(self, s): return s.box(self.Note).count()
     def close(self, s): s.close()
 
@@ -74,7 +87,7 @@ class Sqlite:
     def create(self, path): os.makedirs(path); c = self.m.Connection(path + '/db.sqlite'); c.execute(DDL); return c
     def open(self, path): return self.m.Connection(path + '/db.sqlite')
     def write(self, c, i):
-        with c: c.executemany(INS, [(f'note {j} of agent {i}', j) for j in range(ROWS)])
+        with c: c.executemany(INS, rows(i))
     def read(self, c): return c.execute(CNT).fetchall()[0][0]
     def close(self, c): c.close()
 
@@ -84,7 +97,7 @@ class Turso:
     def create(self, path): os.makedirs(path); c = self.m.connect(path + '/db.sqlite'); c.execute(DDL); c.commit(); return c
     def open(self, path): return self.m.connect(path + '/db.sqlite')
     def write(self, c, i):
-        cur = c.cursor(); cur.executemany(INS, [(f'note {j} of agent {i}', j) for j in range(ROWS)]); c.commit()
+        cur = c.cursor(); cur.executemany(INS, rows(i)); c.commit()
     def read(self, c): cur = c.cursor(); cur.execute(CNT); return cur.fetchall()[0][0]
     def close(self, c): c.close()
 
@@ -94,7 +107,7 @@ class Libsql:
     def create(self, path): os.makedirs(path); c = self.m.connect(path + '/db.sqlite'); c.execute(DDL); c.commit(); return c
     def open(self, path): return self.m.connect(path + '/db.sqlite')
     def write(self, c, i):
-        c.executemany(INS, [(f'note {j} of agent {i}', j) for j in range(ROWS)]); c.commit()
+        c.executemany(INS, rows(i)); c.commit()
     def read(self, c): return c.execute(CNT).fetchall()[0][0]
     def close(self, c): c.close()
 
@@ -165,6 +178,6 @@ def phase_hold(e, k):
 
 if __name__ == '__main__':
     e = ENGINES[sys.argv[1]](); phase = sys.argv[2]; n = int(sys.argv[3])
-    r = {'engine': e.name, 'version': e.version, 'phase': phase}
+    r = {'engine': e.name, 'version': e.version, 'phase': phase, 'workload': WORKLOAD}
     r.update({'create': phase_create, 'open': phase_open, 'hold': phase_hold}[phase](e, n))
     print(json.dumps(r, ensure_ascii=False))
