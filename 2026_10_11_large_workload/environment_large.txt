@@ -1,0 +1,12 @@
+# Environment 2026-10-11T13:21:34Z
+Linux 6.8.0-146-generic
+model name	: AMD Ryzen 9 5950X 16-Core Processor
+32
+               total        used        free      shared  buff/cache   available
+Mem:           64213       19284       28687         716       16306       44928
+/dev/nvme1n1p1 ext4 1729094204 585470568 1055716668  36%
+Python 3.12.3
+{'objectbox': '5.0.0b1', 'objectbox-clib': '5.3.2', 'apsw': '3.53.4.0', 'pyturso': '0.8.1', 'libsql': '0.1.11', 'flatbuffers': '25.12.19', 'numpy': '2.5.3'}
+objectbox-python: 5cc8f48 Store: sync a model only once per process, add skip_model_sync
+adhoc-db-benchmarks: 5bf04fc run_large.sh: BENCH_MAX_LOAD waits for a low load before each phase; record the load in each result (load1)
+load average at start: 1.10 1.45 1.30 1/3187 73816

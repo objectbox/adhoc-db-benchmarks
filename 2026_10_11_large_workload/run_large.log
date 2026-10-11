@@ -1,0 +1,167 @@
+13:21:34 obx standard create 10000 (large)
+13:21:34 waiting for load < 1: 1.10 1.45 1.30
+13:22:04 waiting for load < 1: 1.11 1.43 1.29
+13:27:56 obx standard open warm 1
+13:27:56 waiting for load < 1: 1.38 1.53 1.39
+13:28:26 waiting for load < 1: 1.18 1.48 1.37
+13:29:00 obx standard open warm 2
+13:29:05 obx standard open warm 3
+13:29:05 waiting for load < 1: 1.12 1.41 1.35
+13:29:39 obx standard open cold: skipped (dropping the page cache needs root)
+13:29:39 obx standard hold 1000
+13:29:39 waiting for load < 1: 1.22 1.38 1.35
+13:30:09 waiting for load < 1: 1.17 1.34 1.33
+13:30:39 waiting for load < 1: 1.33 1.35 1.33
+13:31:09 waiting for load < 1: 1.25 1.34 1.33
+13:31:39 waiting for load < 1: 1.14 1.31 1.32
+13:32:09 waiting for load < 1: 1.18 1.31 1.32
+13:32:43 obx mallopt create 10000 (large)
+13:38:07 obx mallopt open warm 1
+13:38:07 waiting for load < 1: 1.81 1.60 1.44
+13:38:37 waiting for load < 1: 1.21 1.48 1.40
+13:39:11 obx mallopt open warm 2
+13:39:15 obx mallopt open warm 3
+13:39:20 obx mallopt open cold: skipped (dropping the page cache needs root)
+13:39:20 obx mallopt hold 1000
+13:39:20 waiting for load < 1: 1.17 1.40 1.38
+13:39:50 obx_cached standard create 10000 (large)
+13:45:12 obx_cached standard open warm 1
+13:45:12 waiting for load < 1: 1.54 1.63 1.49
+13:45:42 waiting for load < 1: 1.09 1.50 1.45
+13:46:16 obx_cached standard open warm 2
+13:46:19 obx_cached standard open warm 3
+13:46:23 obx_cached standard open cold: skipped (dropping the page cache needs root)
+13:46:23 obx_cached standard hold 1000
+13:46:26 obx_cached mallopt create 10000 (large)
+13:51:49 obx_cached mallopt open warm 1
+13:51:49 waiting for load < 1: 1.59 1.47 1.44
+13:52:19 waiting for load < 1: 1.15 1.38 1.41
+13:52:53 obx_cached mallopt open warm 2
+13:52:56 obx_cached mallopt open warm 3
+13:52:59 obx_cached mallopt open cold: skipped (dropping the page cache needs root)
+13:52:59 obx_cached mallopt hold 1000
+13:53:00 obx_nosync standard create 10000 (large)
+13:58:14 obx_nosync standard open warm 1
+13:58:14 waiting for load < 1: 1.93 1.66 1.50
+13:58:44 waiting for load < 1: 1.33 1.54 1.46
+13:59:16 obx_nosync standard open warm 2
+13:59:19 obx_nosync standard open warm 3
+13:59:21 obx_nosync standard open cold: skipped (dropping the page cache needs root)
+13:59:21 obx_nosync standard hold 1000
+13:59:23 obx_nosync mallopt create 10000 (large)
+14:04:50 obx_nosync mallopt open warm 1
+14:04:50 waiting for load < 1: 2.01 1.79 1.60
+14:05:20 waiting for load < 1: 1.61 1.73 1.59
+14:05:50 waiting for load < 1: 1.20 1.61 1.55
+14:06:20 waiting for load < 1: 1.03 1.54 1.53
+14:06:52 obx_nosync mallopt open warm 2
+14:06:55 obx_nosync mallopt open warm 3
+14:06:57 obx_nosync mallopt open cold: skipped (dropping the page cache needs root)
+14:06:57 obx_nosync mallopt hold 1000
+14:06:58 sqlite standard create 10000 (large)
+14:11:56 sqlite standard open warm 1
+14:11:56 waiting for load < 1: 3.01 2.48 1.94
+14:12:26 waiting for load < 1: 2.12 2.32 1.90
+14:12:56 waiting for load < 1: 1.34 2.11 1.85
+14:13:26 waiting for load < 1: 1.07 1.97 1.81
+14:13:58 sqlite standard open warm 2
+14:14:01 sqlite standard open warm 3
+14:14:01 waiting for load < 1: 1.09 1.87 1.78
+14:14:34 sqlite standard open cold: skipped (dropping the page cache needs root)
+14:14:34 sqlite standard hold 1000
+14:14:36 sqlite mallopt create 10000 (large)
+14:19:45 sqlite mallopt open warm 1
+14:19:45 waiting for load < 1: 2.93 2.45 2.06
+14:20:15 waiting for load < 1: 1.93 2.26 2.00
+14:20:45 waiting for load < 1: 2.06 2.24 2.01
+14:21:15 waiting for load < 1: 1.30 2.04 1.95
+14:21:45 waiting for load < 1: 1.08 1.92 1.91
+14:22:15 waiting for load < 1: 1.26 1.88 1.90
+14:22:45 waiting for load < 1: 1.78 1.96 1.92
+14:23:15 waiting for load < 1: 1.19 1.80 1.87
+14:23:48 sqlite mallopt open warm 2
+14:23:50 sqlite mallopt open warm 3
+14:23:53 sqlite mallopt open cold: skipped (dropping the page cache needs root)
+14:23:53 sqlite mallopt hold 1000
+14:23:54 turso standard create 10000 (large)
+14:31:17 turso standard open warm 1
+14:31:17 waiting for load < 1: 2.89 2.76 2.26
+14:31:47 waiting for load < 1: 2.02 2.56 2.21
+14:32:17 waiting for load < 1: 1.39 2.36 2.15
+14:34:08 turso standard open warm 2
+14:34:08 waiting for load < 1: 2.38 2.35 2.16
+14:34:38 waiting for load < 1: 1.58 2.15 2.11
+14:35:08 waiting for load < 1: 1.02 1.96 2.04
+14:35:38 waiting for load < 1: 1.01 1.87 2.01
+14:37:31 turso standard open warm 3
+14:37:31 waiting for load < 1: 1.88 1.87 1.99
+14:38:01 waiting for load < 1: 1.29 1.72 1.94
+14:39:58 turso standard open cold: skipped (dropping the page cache needs root)
+14:39:58 turso standard hold 1000
+14:39:58 waiting for load < 1: 2.01 1.78 1.93
+14:40:28 waiting for load < 1: 1.49 1.67 1.89
+14:40:58 waiting for load < 1: 1.07 1.56 1.84
+14:41:37 turso mallopt create 10000 (large)
+14:41:37 waiting for load < 1: 1.08 1.49 1.81
+14:42:07 waiting for load < 1: 1.06 1.45 1.78
+14:49:57 turso mallopt open warm 1
+14:49:57 waiting for load < 1: 2.75 2.54 2.20
+14:50:27 waiting for load < 1: 2.06 2.39 2.16
+14:50:57 waiting for load < 1: 1.57 2.24 2.11
+14:51:27 waiting for load < 1: 1.22 2.09 2.07
+14:53:17 turso mallopt open warm 2
+14:53:17 waiting for load < 1: 1.85 2.01 2.03
+14:53:47 waiting for load < 1: 1.87 1.99 2.02
+14:54:17 waiting for load < 1: 2.04 2.03 2.03
+14:54:47 waiting for load < 1: 2.49 2.14 2.07
+14:55:17 waiting for load < 1: 2.29 2.12 2.07
+14:55:47 waiting for load < 1: 1.50 1.95 2.01
+14:56:17 waiting for load < 1: 1.10 1.81 1.96
+14:56:47 waiting for load < 1: 1.05 1.72 1.93
+14:58:41 turso mallopt open warm 3
+14:58:41 waiting for load < 1: 2.80 2.02 2.00
+14:59:11 waiting for load < 1: 2.32 1.98 1.99
+14:59:41 waiting for load < 1: 1.87 1.91 1.97
+15:00:11 waiting for load < 1: 3.28 2.23 2.07
+15:00:41 waiting for load < 1: 2.13 2.05 2.01
+15:01:11 waiting for load < 1: 1.94 2.00 2.00
+15:01:41 waiting for load < 1: 1.66 1.92 1.97
+15:02:11 waiting for load < 1: 1.15 1.77 1.92
+15:04:03 turso mallopt open cold: skipped (dropping the page cache needs root)
+15:04:03 turso mallopt hold 1000
+15:04:03 waiting for load < 1: 1.75 1.72 1.88
+15:04:33 waiting for load < 1: 3.31 2.14 2.01
+15:05:03 waiting for load < 1: 2.39 2.03 1.98
+15:05:33 waiting for load < 1: 1.85 1.93 1.95
+15:06:03 waiting for load < 1: 1.31 1.79 1.90
+15:06:40 libsql standard create 10000 (large)
+15:06:40 waiting for load < 1: 2.60 1.99 1.96
+15:07:10 waiting for load < 1: 1.70 1.83 1.91
+15:07:40 waiting for load < 1: 1.10 1.67 1.85
+15:08:10 waiting for load < 1: 1.09 1.61 1.82
+15:08:40 waiting for load < 1: 1.23 1.58 1.81
+15:09:10 waiting for load < 1: 1.62 1.64 1.82
+15:09:40 waiting for load < 1: 1.37 1.58 1.79
+15:10:10 waiting for load < 1: 1.67 1.65 1.81
+15:10:40 waiting for load < 1: 1.21 1.53 1.77
+15:18:29 libsql standard open warm 1
+15:18:29 waiting for load < 1: 2.82 2.43 2.10
+15:18:59 waiting for load < 1: 1.97 2.27 2.06
+15:19:29 waiting for load < 1: 1.42 2.10 2.01
+15:19:59 waiting for load < 1: 1.25 1.99 1.97
+15:20:31 libsql standard open warm 2
+15:20:33 libsql standard open warm 3
+15:20:35 libsql standard open cold: skipped (dropping the page cache needs root)
+15:20:35 libsql standard hold 1000
+15:20:35 waiting for load < 1: 1.02 1.82 1.91
+15:21:05 waiting for load < 1: 1.14 1.78 1.90
+15:21:37 libsql mallopt create 10000 (large)
+15:28:36 libsql mallopt open warm 1
+15:28:36 waiting for load < 1: 2.37 2.27 2.11
+15:29:06 waiting for load < 1: 1.72 2.13 2.07
+15:29:36 waiting for load < 1: 1.16 1.96 2.02
+15:30:08 libsql mallopt open warm 2
+15:30:11 libsql mallopt open warm 3
+15:30:13 libsql mallopt open cold: skipped (dropping the page cache needs root)
+15:30:13 libsql mallopt hold 1000
+15:30:14 done
