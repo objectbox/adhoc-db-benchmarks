@@ -10,6 +10,8 @@ Environment:
   BENCH_ROOT     data directory (default: data_large)
   BENCH_MALLOPT  =1 sets mallopt(M_MMAP_THRESHOLD, 131072) in the process; otherwise defaults
   BENCH_WORKLOAD small (default): ten objects with a short text per store; large: 1,000 objects with a 300-character text
+  BENCH_OBX_FLATBUFFERS  ObjectBox only, experimental (objectbox-python branch fast-flatbuffers-builder):
+                 codegen or fast_builder marshals objects for put with it; recorded as "obx_flatbuffers"
 
 The engine classes (schema, writing, query) come unchanged from measure.py.
 One process per invocation, so memory values do not depend on previous phases.
@@ -86,5 +88,6 @@ if __name__ == '__main__':
     mm = int(sys.argv[4]) if len(sys.argv) > 4 else 0; seed = int(sys.argv[5]) if len(sys.argv) > 5 else 1
     r = {'engine': e.name, 'version': e.version, 'phase': phase, 'setting': 'mallopt' if TUNED else 'standard',
          'workload': WORKLOAD, 'objects_per_store': ROWS}
+    if getattr(e, 'flatbuffers', ''): r['obx_flatbuffers'] = e.flatbuffers  # experimental (BENCH_OBX_FLATBUFFERS)
     r.update({'create': phase_create, 'open': phase_open, 'hold': phase_hold}[phase](e, n, mm, seed))
     print(json.dumps(r, ensure_ascii=False))

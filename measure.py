@@ -51,6 +51,13 @@ class Obx:
         if 'readers' in tune: self.options['max_readers'] = 8
         if 'maxkb' in tune: self.options['max_db_size_in_kb'] = 10240
         if 'notls' in tune: self.options['no_reader_thread_locals'] = True
+        # Experimental marshalling of objects for put (objectbox-python branch fast-flatbuffers-builder, unreleased)
+        self.flatbuffers = os.environ.get('BENCH_OBX_FLATBUFFERS', '')
+        if self.flatbuffers:
+            enable = {'codegen': 'enable_flatbuffers_codegen', 'fast_builder': 'enable_fast_flatbuffers_builder'}
+            if self.flatbuffers not in enable: sys.exit(f'unknown BENCH_OBX_FLATBUFFERS {self.flatbuffers} (codegen|fast_builder)')
+            import objectbox.experimental as experimental  # needs objectbox from that branch, e.g. via PYTHONPATH
+            getattr(experimental, enable[self.flatbuffers])()
     def model(self):
         m = self.Model(); m.entity(self.Note); return m
     def _open(self, path):
