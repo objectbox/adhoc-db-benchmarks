@@ -4,7 +4,7 @@ As of 2026-10-11 · internal until the results have been reviewed · measured on
 
 ## Result in three sentences
 
-With 1,000 objects per store, open, query (count), close takes 0.22 ms for ObjectBox with `skip_model_sync`, between libSQL (0.20 ms) and SQLite (0.28 ms); the ObjectBox count query itself is the fastest (0.09 ms vs. 0.13 ms for libSQL and 0.20 ms for SQLite). An open ObjectBox store costs 491 KB of resident memory, but only 19 KB of it is the process' own (anonymous) memory – the rest is the store's data file mapped from the OS page cache – while SQLite (409 KB) and libSQL (421 KB) hold their pages in their own heap. Creating a store and writing the 1,000 objects is slightly faster with SQLite (26.6 ms) than with ObjectBox (29.9–30.7 ms), but about half of ObjectBox's time is the FlatBuffers marshalling of the notes in Python, specific to ObjectBox Python; without it ObjectBox would be at an estimated ~15–16 ms. ObjectBox needs 472 KB of disk per store vs. 316 KB for the SQL engines.
+With 1,000 objects per store, open, query (count), close takes 0.22 ms for ObjectBox with `skip_model_sync`, between libSQL (0.20 ms) and SQLite (0.28 ms); the ObjectBox count query itself is the fastest (0.09 ms vs. 0.13 ms for libSQL and 0.20 ms for SQLite). An open ObjectBox store costs 491 KB of resident memory, but only 19 KB of it is the process' own (anonymous) memory – the rest is the store's data file mapped from the OS page cache – while SQLite (409 KB) and libSQL (421 KB) hold their pages in their own heap. Creating a store and writing the 1,000 objects is slightly faster with SQLite (26.6 ms) than with ObjectBox (29.9–30.7 ms), but about half of ObjectBox's time is the FlatBuffers marshalling of the notes in Python, specific to ObjectBox Python; with the experimental FlatBuffers codegen of objectbox-python, ObjectBox with a cached model takes 21.55 ms (measured on 2026-10-12, `../2026_10_12_flatbuffers_codegen/README.md`). ObjectBox needs 472 KB of disk per store vs. 316 KB for the SQL engines.
 
 ## 10,000 stores per engine, defaults
 
@@ -13,7 +13,7 @@ Medians of the three warm open runs (all 10,000 stores in random order per run).
 | | ObjectBox, sync every open | ObjectBox, cached model | ObjectBox, skip model sync | SQLite | Turso Database | libSQL |
 |---|---|---|---|---|---|---|
 | Create, write 1,000 objects, close (median) | 30.72 ms | 30.73 ms | 29.85 ms | 26.59 ms | 40.80 ms | 42.80 ms |
-| same, estimated without the Python FlatBuffers marshalling | ~15.7 ms | ~15.7 ms | ~14.8 ms | – | – | – |
+| same, with the experimental FlatBuffers codegen (2026-10-12) | – | 21.55 ms | – | – | – | – |
 | Stores per second | 31 | 31 | 32 | 34 | 23 | 23 |
 | Open (median) | 0.302 ms | 0.209 ms | 0.098 ms | 0.037 ms | 0.650 ms | 0.048 ms |
 | Count query (median) | 0.095 ms | 0.087 ms | 0.086 ms | 0.204 ms | 0.379 ms | 0.130 ms |
@@ -32,7 +32,6 @@ Medians of the three warm open runs (all 10,000 stores in random order per run).
 | | ObjectBox, sync every open | ObjectBox, cached model | ObjectBox, skip model sync | SQLite | Turso Database | libSQL |
 |---|---|---|---|---|---|---|
 | Create, write 1,000 objects, close (median) | 31.02 ms | 30.89 ms | 31.46 ms | 29.53 ms | 40.68 ms | 38.93 ms |
-| same, estimated without the Python FlatBuffers marshalling | ~16.0 ms | ~15.9 ms | ~16.4 ms | – | – | – |
 | Stores per second | 31 | 31 | 31 | 32 | 23 | 24 |
 | Open (median) | 0.270 ms | 0.186 ms | 0.085 ms | 0.036 ms | 0.748 ms | 0.051 ms |
 | Count query (median) | 0.093 ms | 0.090 ms | 0.087 ms | 0.203 ms | 0.370 ms | 0.147 ms |
@@ -61,7 +60,7 @@ Profile of creating 1,000 stores with `obx_cached` (`profile_create.py`, output 
 
 - **FlatBuffers marshalling: ~15 ms per store, ~15 µs per note.** Before the put, each note is serialized to a FlatBuffer by the pure-Python `flatbuffers.Builder` (`Entity._marshal` in objectbox-python): about 185 Python function calls per note for three properties, including writing a vtable per note. **This is only the case with ObjectBox Python.** ObjectBox in other languages (C, C++, Java, Kotlin, Dart, Go, Swift) uses generated code and efficient buffers for marshalling, where it is a much smaller fraction of the time. The put in the C library itself takes 0.28 ms for 1,000 notes (tmpfs).
 - **Disk syncs: ~19 ms per store**, two commits (the schema when creating the store, and the put), each with an `fdatasync` (2 per store in `strace`). SQLite also commits twice here (`create table` and the insert transaction).
-- The row "estimated without the Python FlatBuffers marshalling" subtracts the 15.03 ms from each ObjectBox variant's measured median (all three use the same put). It is an estimate from a separate profiling run, not a measurement.
+- The row "with the experimental FlatBuffers codegen" is a separate measurement of this create phase for `obx_cached` only, on 2026-10-12 (`../2026_10_12_flatbuffers_codegen/README.md`): objectbox-python's experimental codegen (unreleased) marshals the notes instead of the generic `flatbuffers.Builder`; 21.55 ms instead of 30.73 ms. It replaces an earlier estimate that subtracted the 15.03 ms marshalling time (~15.7 ms); the measured gain is smaller, as the codegen still costs CPU time and the CPU runs at a lower clock while waiting for the disk syncs.
 
 ## What was measured
 
@@ -73,7 +72,7 @@ Profile of creating 1,000 stores with `obx_cached` (`profile_create.py`, output 
 
 1. Warm page cache only (no root for `drop_caches`); all 10,000 stores (23 GB) fit into the 64 GB of memory, so the opens never read from disk.
 2. The load was only controlled at the start of each phase. During creation it rose to 2–5 (highest 5.19 during Turso Database's create); on Linux the load average includes processes waiting for disk I/O, so this is very likely mostly the benchmark's own disk syncs, but other activity on the workstation was not excluded.
-3. Creation is dominated by the disk's sync latency (ext4 on NVMe) and, for ObjectBox, by the Python FlatBuffers marshalling (see above). The estimate without the marshalling is derived from a separate profiling run (load 0.48 at its start), not measured in the benchmark.
+3. Creation is dominated by the disk's sync latency (ext4 on NVMe) and, for ObjectBox, by the Python FlatBuffers marshalling (see above). The value with the experimental FlatBuffers codegen is from a separate run of only that phase and variant on the next day (load 0.73 at its start).
 4. Resident memory for ObjectBox includes the pages of the memory-mapped data file that the count query touched (shared, file-backed, reclaimable by the OS); the SQL engines copy pages into their own page cache in the heap (anonymous). Both rows are given; which one matters depends on how memory is accounted (e.g. container limits count the page cache in part).
 5. The count query in SQLite and libSQL scans the table; in ObjectBox it is a count of the entity's objects. A different query (e.g. reading all objects) would compare differently.
 6. One run per setting and variant (three open runs each), 10,000 stores; not comparable in absolute numbers to the 100,000-store measurements.

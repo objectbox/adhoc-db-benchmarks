@@ -1,0 +1,14 @@
+Mon Oct 12 07:18:02 UTC 2026
+Linux whitebox 6.8.0-146-generic #146-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep  3 16:12:30 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+Python 3.12.3
+objectbox-python: c0e3088 Changelog and AGENTS.md: experimental FlatBuffers codegen (branch fast-flatbuffers-builder)
+flatbuffers       25.12.19
+numpy             2.5.3
+objectbox         5.0.0b1
+objectbox-clib    5.3.2
+CPU(s):                                  32
+Model name:                              AMD Ryzen 9 5950X 16-Core Processor
+CPU(s) scaling MHz:                      60%
+               total        used        free      shared  buff/cache   available
+Mem:            62Gi        20Gi        18Gi       890Mi        22Gi        41Gi
+/dev/nvme1n1p1 ext4  1,7T  559G 1007G  36%

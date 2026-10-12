@@ -26,10 +26,10 @@ Creation on this machine is dominated by the disk's sync latency. With `mallopt(
 | Memory per open store, resident | 2,538 KB | 2,534 KB | 491 KB | 409 KB | 2,470 KB | 421 KB |
 | same, anonymous (process' own memory) | 2,065 KB | 2,062 KB | 19 KB | 407 KB | 2,466 KB | 418 KB |
 | Create, write 1,000 objects, close (median) | 30.72 ms | 30.73 ms | 29.85 ms | 26.59 ms | 40.80 ms | 42.80 ms |
-| same, estimated without the Python FlatBuffers marshalling | ~15.7 ms | ~15.7 ms | ~14.8 ms | – | – | – |
+| same, with the experimental FlatBuffers codegen ([2026-10-12](2026_10_12_flatbuffers_codegen/README.md)) | – | 21.55 ms | – | – | – | – |
 | Space per store, files | 472 KB | 472 KB | 472 KB | 316 KB | 316 KB | 316 KB |
 
-ObjectBox's resident memory is mostly its data file mapped from the OS page cache; the SQL engines keep their pages in their own heap. About half of ObjectBox's create time (~15 ms per store) is the FlatBuffers marshalling of the 1,000 notes in Python; this is only the case with ObjectBox Python – other ObjectBox languages use generated code and efficient buffers, where marshalling is a much smaller fraction.
+ObjectBox's resident memory is mostly its data file mapped from the OS page cache; the SQL engines keep their pages in their own heap. About half of ObjectBox's create time (~15 ms per store) is the FlatBuffers marshalling of the 1,000 notes in Python with the generic `flatbuffers.Builder`; this is only the case with ObjectBox Python – other ObjectBox languages use generated code and efficient buffers, where marshalling is a much smaller fraction. With the experimental FlatBuffers codegen of objectbox-python (unreleased), creation with a cached model takes 21.55 ms, faster than SQLite (measured separately on 2026-10-12, only this phase and variant).
 
 Earlier measurements drove ObjectBox through its C API directly (ctypes): a side experiment, not how applications use ObjectBox from Python. Their numbers are only in the [2026-10-05](2026_10_05_first_measurement/README.md) and [2026-10-06](2026_10_06_c_api_100k_500k/README.md) write-ups and are not comparable to the results above (different machine, C API instead of the Python API).
 
@@ -43,3 +43,4 @@ Code (`measure.py`, `measure_large.py`, `run.sh`, `run_large.sh`, `analyze*.py`,
 | [2026-10-06: 100,000 and 500,000 stores (side experiment, C API)](2026_10_06_c_api_100k_500k/README.md) | Cloud VM, 2 cores, 8 GB | 100,000 stores per engine, ObjectBox also 500,000; warm and cold page cache; ObjectBox via the C API (ctypes) |
 | [2026-10-10: Python API and model sync](2026_10_09_python_api_model_sync/README.md) | Workstation, Ryzen 9 5950X, 64 GB | 100,000 stores per engine, warm only; ObjectBox via the objectbox-python API: model synced on every open, once, or not at all |
 | [2026-10-11: large workload](2026_10_11_large_workload/README.md) | Workstation, Ryzen 9 5950X, 64 GB | 10,000 stores per engine with 1,000 objects of 300 characters each, warm only, load-gated; ObjectBox via the Python API in the same three variants |
+| [2026-10-12: create with the experimental FlatBuffers codegen](2026_10_12_flatbuffers_codegen/README.md) | Workstation, Ryzen 9 5950X, 64 GB | Large workload, create phase only, ObjectBox with a cached model; objects marshalled with the experimental FlatBuffers codegen (objectbox-python, unreleased) |

@@ -7,9 +7,8 @@ rows = [json.loads(l) for l in open(os.path.join(HERE, 'results_large.jsonl'))]
 ENGINES = [('obx', 'ObjectBox, sync every open'), ('obx_cached', 'ObjectBox, cached model'),
            ('obx_nosync', 'ObjectBox, skip model sync'), ('sqlite', 'SQLite'), ('turso', 'Turso Database'), ('libsql', 'libSQL')]
 SETTINGS = ['standard', 'mallopt']
-# Median time for the Python FlatBuffers marshalling of a store's 1,000 notes (objectbox-python only), from
-# profile_create.txt (obx_cached, on disk); used for the estimated create time without it.
-MARSHAL_MS = 15.03
+# Create phase with the experimental FlatBuffers codegen of objectbox-python, measured separately (obx_cached only)
+CODEGEN = [json.loads(l) for l in open(os.path.join(HERE, '..', '2026_10_12_flatbuffers_codegen', 'results_create.jsonl'))]
 
 
 def pick(engine, setting, phase):
@@ -32,7 +31,10 @@ def table(setting, engines):
     opens = lambda e: pick(e, setting, 'open')
     hold = lambda e: pick(e, setting, 'hold')[0]
     row('Create, write 1,000 objects, close (median)', lambda e: fmt(create(e)['create_write_close']['median_ms']) + ' ms')
-    row('same, estimated without the Python FlatBuffers marshalling', lambda e: '~' + fmt(create(e)['create_write_close']['median_ms'] - MARSHAL_MS, 1) + ' ms' if e.startswith('obx') else '–')
+    codegen = {r['engine']: r for r in CODEGEN if r['setting'] == setting and r['phase'] == 'create'}
+    if codegen:
+        row('same, with the experimental FlatBuffers codegen (2026-10-12)',
+            lambda e: fmt(codegen[e]['create_write_close']['median_ms']) + ' ms' if e in codegen else '–')
     row('Stores per second', lambda e: fmt(create(e)['stores_per_s'], 0))
     row('Open (median)', lambda e: fmt(med([r['open']['median_ms'] for r in opens(e)]), 3) + ' ms')
     row('Count query (median)', lambda e: fmt(med([r['first_query']['median_ms'] for r in opens(e)]), 3) + ' ms')
