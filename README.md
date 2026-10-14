@@ -25,11 +25,12 @@ Creation on this machine is dominated by the disk's sync latency. With `mallopt(
 | Count query (median) | 0.095 ms | 0.087 ms | 0.086 ms | 0.204 ms | 0.379 ms | 0.130 ms |
 | Memory per open store, resident | 2,538 KB | 2,534 KB | 491 KB | 409 KB | 2,470 KB | 421 KB |
 | same, anonymous (process' own memory) | 2,065 KB | 2,062 KB | 19 KB | 407 KB | 2,466 KB | 418 KB |
-| Create, write 1,000 objects, close (median) | 30.72 ms | 30.73 ms | 29.85 ms | 26.59 ms | 40.80 ms | 42.80 ms |
-| same, with the experimental FlatBuffers codegen ([2026-10-14](2026_10_14_large_workload_objectbox/README.md)) | 17.88 ms | 18.02 ms | 17.46 ms | – | – | – |
+| Create, write 1,000 objects, close (median) | 17.88 ms* | 18.02 ms* | 17.46 ms* | 26.59 ms | 40.80 ms | 42.80 ms |
 | Space per store, files | 472 KB | 472 KB | 472 KB | 316 KB | 316 KB | 316 KB |
 
-ObjectBox's resident memory is mostly its data file mapped from the OS page cache; the SQL engines keep their pages in their own heap. About half of ObjectBox's create time (~15 ms per store) is the FlatBuffers marshalling of the 1,000 notes in Python with the generic `flatbuffers.Builder`; this is only the case with ObjectBox Python – other ObjectBox languages use generated code and efficient buffers, where marshalling is a much smaller fraction. With the experimental FlatBuffers codegen of objectbox-python (unreleased), creation takes 17.5–18.0 ms in all three ObjectBox variants, faster than SQLite (measured separately on 2026-10-14 with objectbox-python 0ac38fa, ObjectBox only; the generic builder measured 30.5–31.2 ms there, as on 2026-10-11).
+\* Separate test run on 2026-10-14 with an objectbox-python 5.0 beta (0ac38fa) and its experimental FlatBuffers codegen ([details](2026_10_14_large_workload_objectbox/README.md)); with the generic `flatbuffers.Builder`, ObjectBox took 30.5–31.2 ms in that run (29.9–30.7 ms on 2026-10-11).
+
+ObjectBox's resident memory is mostly its data file mapped from the OS page cache; the SQL engines keep their pages in their own heap. With the generic `flatbuffers.Builder`, about half of ObjectBox's create time (~15 ms of ~30 ms per store) is the FlatBuffers marshalling of the 1,000 notes in Python; this is only the case with ObjectBox Python – other ObjectBox languages use generated code and efficient buffers, where marshalling is a much smaller fraction. The experimental FlatBuffers codegen of objectbox-python replaces it with generated code, hence the create times marked with \*.
 
 Earlier measurements drove ObjectBox through its C API directly (ctypes): a side experiment, not how applications use ObjectBox from Python. Their numbers are only in the [2026-10-05](2026_10_05_first_measurement/README.md) and [2026-10-06](2026_10_06_c_api_100k_500k/README.md) write-ups and are not comparable to the results above (different machine, C API instead of the Python API).
 
