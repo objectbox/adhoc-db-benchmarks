@@ -1,0 +1,13 @@
+# Environment 2026-10-14T06:08:28Z
+Linux 6.8.0-146-generic
+model name	: AMD Ryzen 9 5950X 16-Core Processor
+32
+               total        used        free      shared  buff/cache   available
+Mem:           64213        9032       27989         387       26680       55180
+/dev/nvme1n1p1 ext4 1729094204 595321944 1045865292  37%
+Python 3.12.3
+{'objectbox': '5.0.0b1', 'objectbox-clib': '5.3.2', 'flatbuffers': '25.12.19', 'numpy': '2.5.3'}
+objectbox-python: 0ac38fa FlatBuffers codegen: faster reading of dates and strings
+ada4584433c4737bdc1f2cb11ba38df1f9b51ed3d5d13fa7f41043524d5e95db  ../objectbox-python/dist/objectbox-5.0.0b1-py3-none-any.whl
+adhoc-db-benchmarks: 1526b7e Results: large workload create with the experimental FlatBuffers codegen (obx_cached, 10,000 stores): 21.55 ms instead of 30.73 ms; replaces the estimate without marshalling
+load average at start: 0.55 0.54 0.47 1/2307 1208014
