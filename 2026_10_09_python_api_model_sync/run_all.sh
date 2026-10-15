@@ -7,7 +7,7 @@ log "load ok: $(cut -d' ' -f1-3 /proc/loadavg)"
 {
   echo "# Environment $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   uname -sr; grep -m1 'model name' /proc/cpuinfo; nproc; free -m | head -2
-  df -T . | tail -1
+  df --output=source,fstype,size,used,avail,pcent . | tail -1
   .venv/bin/python --version
   .venv/bin/python -c "import importlib.metadata as m; print({p: m.version(p) for p in ['objectbox', 'objectbox-clib', 'apsw', 'pyturso', 'libsql', 'flatbuffers', 'numpy']})"
   echo "objectbox-python: $(git -C ../objectbox-python log -1 --format='%h %s')"
