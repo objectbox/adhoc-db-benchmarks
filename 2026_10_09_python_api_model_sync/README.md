@@ -1,6 +1,6 @@
 # ObjectBox via the Python API: syncing the model once, or not at all
 
-As of 2026-10-10 · internal until the results have been reviewed · measured on a desktop workstation (not the cloud sandbox of the 2026-10-06 write-up). Same measurement as `../2026_10_06_c_api_100k_500k/README.md` (100,000 stores per engine), but ObjectBox is now driven through the regular objectbox-python API in three variants; warm page cache only.
+As of 2026-10-10 · measured on a desktop workstation (not the cloud sandbox of the 2026-10-06 write-up). Same measurement as `../2026_10_06_c_api_100k_500k/README.md` (100,000 stores per engine), but ObjectBox is now driven through the regular objectbox-python API in three variants; warm page cache only.
 
 ## Result in three sentences
 

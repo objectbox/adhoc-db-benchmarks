@@ -1,6 +1,6 @@
 # One database per agent – measuring ObjectBox, SQLite, Turso, libSQL
 
-As of 2026-10-05, third version (after a follow-up question about memory) · internal · one measurement on one machine, not a benchmark · none of this is for external use. The interpretation still needs to be reviewed.
+As of 2026-10-05, third version (after a follow-up question about memory) · one measurement on one machine, not a benchmark.
 
 Earlier versions from the same day are in `_to_delete_erste_Fassung/` (Python package 4.0.0, only ObjectBox against SQLite; numbers outdated, the guess about the limit was wrong) and `_to_delete_zweite_Fassung/` (which still said memory was the cost driver for ObjectBox – superseded by section 3).
 

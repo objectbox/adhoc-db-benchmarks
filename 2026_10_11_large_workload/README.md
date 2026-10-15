@@ -1,6 +1,6 @@
 # Large workload: 1,000 objects of 300 characters per store
 
-As of 2026-10-11 · internal until the results have been reviewed · measured on a desktop workstation. Same setup as `../2026_10_09_python_api_model_sync/README.md` (ObjectBox through the Python API in three variants), but each store gets 1,000 objects with a 300-character text in one transaction instead of ten short ones; 10,000 stores per engine, warm page cache only, each phase started only when the 1-minute load average was below 1.
+As of 2026-10-11 · measured on a desktop workstation. Same setup as `../2026_10_09_python_api_model_sync/README.md` (ObjectBox through the Python API in three variants), but each store gets 1,000 objects with a 300-character text in one transaction instead of ten short ones; 10,000 stores per engine, warm page cache only, each phase started only when the 1-minute load average was below 1.
 
 ## Result in three sentences
 

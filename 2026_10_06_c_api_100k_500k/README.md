@@ -2,7 +2,7 @@
 
 Ad-hoc measurement, not an official benchmark: many small stores per engine – ObjectBox, SQLite, Turso Database, libSQL; 100,000 stores per engine, ObjectBox additionally 500,000.
 
-As of 2026-10-06 · internal until the results have been reviewed · measured in a cloud sandbox. Builds on the first measurement from 2026-10-05 (`../2026_10_05_first_measurement/README.md`, 10,000 stores) and confirms it.
+As of 2026-10-06 · measured in a cloud sandbox. Builds on the first measurement from 2026-10-05 (`../2026_10_05_first_measurement/README.md`, 10,000 stores) and confirms it.
 
 See also `../2026_10_09_python_api_model_sync/README.md` (2026-10-10): ObjectBox via the Python API with the model synced on every open, once, or not at all, on a workstation.
 

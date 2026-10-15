@@ -1,6 +1,6 @@
 # Large workload, ObjectBox with objectbox-python 0ac38fa: generic builder and FlatBuffers codegen
 
-As of 2026-10-14 · internal until the results have been reviewed · measured on a desktop workstation. The ObjectBox part of `../2026_10_11_large_workload/README.md` repeated with a newer objectbox-python: 10,000 stores per variant with 1,000 objects of 300 characters each, the three ObjectBox variants, both allocator settings, warm page cache only, each phase started only when the 1-minute load average was below 1. Each variant ran twice, with the generic `flatbuffers.Builder` (the default) and with the experimental FlatBuffers codegen.
+As of 2026-10-14 · measured on a desktop workstation. The ObjectBox part of `../2026_10_11_large_workload/README.md` repeated with a newer objectbox-python: 10,000 stores per variant with 1,000 objects of 300 characters each, the three ObjectBox variants, both allocator settings, warm page cache only, each phase started only when the 1-minute load average was below 1. Each variant ran twice, with the generic `flatbuffers.Builder` (the default) and with the experimental FlatBuffers codegen.
 
 ## Result in three sentences
 

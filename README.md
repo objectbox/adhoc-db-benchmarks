@@ -1,6 +1,6 @@
 # Adhoc DB Benchmarks: one database per agent
 
-Ad-hoc measurements, not an official benchmark: the fixed cost of many small stores (one per agent) for ObjectBox, SQLite, Turso Database and libSQL. All results are internal until they have been reviewed.
+Ad-hoc measurements, not an official benchmark: the fixed cost of many small stores (one per agent) for ObjectBox, SQLite, Turso Database and libSQL.
 
 ## Main results
 

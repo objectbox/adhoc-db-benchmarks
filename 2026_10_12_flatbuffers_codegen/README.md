@@ -1,6 +1,6 @@
 # Large workload, create with the experimental FlatBuffers codegen (ObjectBox Python)
 
-As of 2026-10-12 · internal until the results have been reviewed · measured on a desktop workstation. One phase of `../2026_10_11_large_workload/README.md` repeated: creating 10,000 stores with 1,000 objects of 300 characters each, ObjectBox with a cached model (`obx_cached`), default allocator settings; the objects are marshalled with the experimental FlatBuffers codegen of objectbox-python (unreleased branch `fast-flatbuffers-builder`) instead of the generic `flatbuffers.Builder`.
+As of 2026-10-12 · measured on a desktop workstation. One phase of `../2026_10_11_large_workload/README.md` repeated: creating 10,000 stores with 1,000 objects of 300 characters each, ObjectBox with a cached model (`obx_cached`), default allocator settings; the objects are marshalled with the experimental FlatBuffers codegen of objectbox-python (unreleased branch `fast-flatbuffers-builder`) instead of the generic `flatbuffers.Builder`.
 
 ## Result in three sentences
 
