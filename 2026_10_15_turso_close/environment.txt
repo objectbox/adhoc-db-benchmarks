@@ -1,0 +1,3 @@
+# load: 0.85 1.08 1.10
+Linux 6.8.0-146-generic
+/dev/nvme1n1p1 ext4

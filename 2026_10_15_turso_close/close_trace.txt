@@ -1,0 +1,10 @@
+=== turso close start
+fsync(4)                                = 0 <0.001647>
+fsync(3)                                = 0 <0.000485>
+ftruncate(4, 0)                         = 0 <0.000040>
+fsync(4)                                = 0 <0.004534>
+=== turso close end
+=== sqlite WAL close start
+unlink("data_turso_close/sqlite_wal/db.sqlite-shm") = 0 <0.000020>
+unlink("data_turso_close/sqlite_wal/db.sqlite-wal") = 0 <0.000019>
+=== sqlite WAL close end

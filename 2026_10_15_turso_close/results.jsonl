@@ -1,0 +1,12 @@
+{"variant": "turso", "runs": 200, "open_ms": 0.0451, "query_ms": 0.1924, "close_ms": 6.2619, "total_ms": 6.4981, "note": "as in the benchmark (measure.Turso)"}
+{"variant": "turso, PRAGMA synchronous=OFF", "runs": 200, "open_ms": 0.0626, "query_ms": 0.1836, "close_ms": 5.8136, "total_ms": 6.0635, "note": ""}
+{"variant": "turso, PRAGMA synchronous=NORMAL", "runs": 200, "open_ms": 0.0649, "query_ms": 0.1846, "close_ms": 6.2465, "total_ms": 6.4952, "note": ""}
+{"variant": "turso, PRAGMA wal_autocheckpoint=0", "runs": 200, "open_ms": 0.0648, "query_ms": 0.1837, "close_ms": 6.1985, "total_ms": 6.447, "note": ""}
+{"variant": "turso, PRAGMA query_only=1", "runs": 200, "open_ms": 0.0652, "query_ms": 0.1854, "close_ms": 5.5195, "total_ms": 5.8979, "note": ""}
+{"variant": "turso, PRAGMA journal_mode=DELETE", "runs": 200, "open_ms": 0.0638, "query_ms": 0.1833, "close_ms": 6.1496, "total_ms": 6.3784, "note": ""}
+{"variant": "turso, PRAGMA values", "journal_mode": [["wal"]], "synchronous": [[2]], "wal_autocheckpoint": []}
+{"variant": "turso, file:...?mode=ro", "result": "IoError: open: NotFound"}
+{"variant": "turso, another connection open", "runs": 200, "open_ms": 0.0269, "query_ms": 0.141, "close_ms": 0.0005, "total_ms": 0.1688, "note": "close is not the last close of the database"}
+{"variant": "sqlite", "runs": 200, "open_ms": 0.0323, "query_ms": 0.1985, "close_ms": 0.0303, "total_ms": 0.257, "note": "as in the benchmark: rollback journal"}
+{"variant": "sqlite, WAL", "runs": 200, "open_ms": 0.0357, "query_ms": 0.3125, "close_ms": 0.0781, "total_ms": 0.4235, "note": "journal_mode=wal set at creation"}
+{"variant": "versions", "pyturso": "0.8.1", "sqlite": "SQLite 3.53.4 (apsw 3.53.4.0)"}
